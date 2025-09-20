@@ -3,35 +3,33 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Lock } from 'lucide-react';
+import axios from "axios";
 
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [message, setMessage] = useState("");
-  const {id}=useParams();
+  const { id } = useParams();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const storedUser = JSON.parse(localStorage.getItem("userData"));
+    try {
+      const response = await axios.post('/api/auth/login', form)
+      const data = response.data
 
-    if (
-      storedUser &&
-      storedUser.email === form.email &&
-      storedUser.password === form.password
-    ) {
-      setMessage(` Login successful! Welcome ${storedUser.name}`);
-
+      setMessage(data.msg || data.error)
       setTimeout(() => {
         window.location.href = `/services/${id}/reviews/confirm`; // redirect to home/dashboard
       }, 1500);
-    } else {
-      setMessage("Invalid credentials. Please try again.");
+
+    } catch (error) {
+      setMessage("Login Failed");
     }
   };
 
@@ -49,15 +47,16 @@ export default function LoginPage() {
       <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email <span className="text-red-500">*</span>
+            Mobile <span className="text-red-500">*</span>
           </label>
           <input
-            type="email"
-            name="email"
-            value={form.email}
+            type="tel"
+            name="mobile"
+            value={form.mobile}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-md px-4 py-3"
-            placeholder="Enter your email"
+            placeholder="Enter your mobile"
+            pattern="\d{10}"
             required
           />
         </div>
