@@ -27,7 +27,7 @@ export default function LoginPage() {
       setTimeout(() => {
         window.location.href = `/services/${id}/reviews/confirm`; // redirect to home/dashboard
       }, 1500);
-      
+
     } catch (error) {
       setMessage("Login Failed");
     }
@@ -56,6 +56,7 @@ export default function LoginPage() {
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-md px-4 py-3"
             placeholder="Enter your mobile"
+            pattern="\d{10}"
             required
           />
         </div>

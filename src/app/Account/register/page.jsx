@@ -112,7 +112,7 @@ export default function RegisterPage() {
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-sm px-4 py-3"
             placeholder="Enter your mobile number"
-            pattern="d[0-9]{10}"
+            pattern="\d{10}"
             required
           />
         </div>
@@ -128,6 +128,7 @@ export default function RegisterPage() {
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-sm px-4 py-3"
             placeholder="Enter your password"
+            minLength={3}
             required
           />
         </div>
@@ -143,6 +144,7 @@ export default function RegisterPage() {
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-sm px-4 py-3"
             placeholder="Retype your password"
+            minLength={3}
             required
           />
         </div>
