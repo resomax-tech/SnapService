@@ -11,11 +11,11 @@ export async function POST(req) {
 
         await dbConnect()
         const body = await req.json()
-        const { email, password } = body
+        const { mobile, password } = body
 
-        console.log(email, password)
+        console.log(mobile, password)
 
-        const user = await User.findOne({ email })
+        const user = await User.findOne({ mobile })
         if (!user) {
             return NextResponse.json({ msg: "user not registered" }, { status: 404 })
         }
@@ -32,10 +32,21 @@ export async function POST(req) {
             path: "/"
         })
 
-        return NextResponse.json({msg: "login success"}, {status: 200})
+        return NextResponse.json({msg: `Login successful! Welcome ${user.name}`}, {status: 200})
 
     } catch (error) {
         console.log("Error", error.message)
         return NextResponse.json({ msg: "server error" }, { status: 500 })
+    }
+}
+
+
+export async function GET(req) {
+    try {
+        await dbConnect()
+        const data = await User.find({})
+        return NextResponse.json({registered_users: data})
+    } catch (error) {
+        return NextResponse.json({msg: error.message}, {status: 500})
     }
 }

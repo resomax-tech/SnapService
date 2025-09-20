@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import axios from "axios";
 export default function RegisterPage() {
   const [form, setForm] = useState({
     name: "",
@@ -20,7 +21,7 @@ export default function RegisterPage() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!form.terms) {
@@ -35,13 +36,27 @@ export default function RegisterPage() {
 
     // Save user data (excluding retypePassword)
     const { retypePassword, ...userData } = form;
-    localStorage.setItem("userData", JSON.stringify(userData));
 
-    setMessage("Registration successful! Redirecting to login...");
+    try {
+      const response = await axios.post('/api/auth/register', userData)
+      const data = response.data
 
-    setTimeout(() => {
-      window.location.href = "/Account/Login";
-    }, 1500);
+      setMessage(data.msg || data.error);
+      setForm({
+        name: "",
+        email: "",
+        mobile: "",
+        password: "",
+        retypePassword: "",
+        terms: false,
+      });
+
+      setTimeout(() => {
+        window.location.href = "/Account/Login";
+      }, 1500);
+    } catch (error) {
+      setMessage("Failed to register")
+    }
   };
 
   return (
@@ -97,6 +112,7 @@ export default function RegisterPage() {
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-sm px-4 py-3"
             placeholder="Enter your mobile number"
+            pattern="d[0-9]{10}"
             required
           />
         </div>
