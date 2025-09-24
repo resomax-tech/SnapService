@@ -1,66 +1,59 @@
 "use client";
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
-import {useParams,useRouter} from "next/navigation";
-
+import { ArrowRight } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+ 
 export default function ServiceDetails() {
-  const {id} = useParams();
-  const [isOpen, setIsOpen] = useState(false);
-  const [selected, setSelected] = useState("Select an item");
-  const router=useRouter();
-
-  // build items with simple for loop
+  const { id } = useParams();
+  const [selected, setSelected] = useState("Select a Community");
+  const router = useRouter();
+ 
+  // build items
   const items = [];
   for (let i = 1; i <= 5; i++) {
     items.push(
-      <li
+      <option
         key={i}
-        onClick={() => {
-          setSelected(`Community ${i}`);
-          setIsOpen(false);
-        }}
-        className="px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-yellow-100"
+        className="px-4 py-2 text-sm text-gray-700 cursor-pointer"
+        value={`Community ${i}`}
       >
         Community {i}
-      </li>
+      </option>
     );
   }
-
+ 
   return (
     <div className="min-h-screen bg-white p-4 flex flex-col items-center">
-      <h1 className="text-3xl font-bold mt-10">All Service List</h1>
-      <p className="mt-6 text-xl font-bold">
-        Service Details for:
-      <span className="text-[#dba144] font-semibold ">{id}</span>
-      </p>
-
+      <h1 className="text-2xl sm:text-3xl font-bold mt-10 text-center mb-10">
+        All Service List
+      </h1>
+ 
       {/* Dropdown section */}
-      <div className="mt-10 w-72">
-        <p className="text-lg font-bold mb-2 text-center">Select Community</p>
-
+      <div className="mt-8 sm:mt-10 w-full max-w-xs sm:max-w-sm px-2">
+        <p className="text-lg sm:text-xl font-bold mb-2 text-center text-gray-600">
+          Select Community
+        </p>
+ 
         <div className="relative">
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="w-full btn  flex items-center justify-between border border-gray-300 rounded-md bg-white py-3 px-4 shadow-sm"
+          <select
+            className="w-full border border-gray-300 rounded-md bg-white py-3 px-3 sm:px-4 shadow-sm outline-none text-gray-700 "
+            value={selected}
+            onChange={(e) => setSelected(e.target.value)}
           >
-            <span>{selected}</span>
-            <span className="bg-[#dba144] p-2 rounded-r-md">
-              <ChevronDown className="w-5 h-4 " />
-            </span>
-          </button>
-
-          {isOpen && (
-            <ul className="absolute left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-10">
-              {items}
-            </ul>
-          )}
+            <option value="Select a Community">Select a Community</option>
+            {items}
+          </select>
         </div>
-        <button className="btn w-1/2 mt-10 ml-16 bg-[#dba144] text-white py-3 rounded-md hover:bg-yellow-600 shadow-md" 
-           onClick={()=>router.push(`/services/${id}/reviews`)}
-           >
-          Proceed 
+ 
+        <button
+          className="mt-6 sm:mt-10 w-1/2 sm:w-1/2 mx-auto bg-[#dba144] text-white py-3 rounded-md hover:bg-yellow-600 shadow-md flex items-center justify-center gap-2"
+          onClick={() => router.push(`/services/${id}/reviews`)}
+        >
+          Proceed <ArrowRight className="w-5 h-5" />
         </button>
       </div>
     </div>
   );
 }
+ 
+ 
