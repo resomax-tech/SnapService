@@ -1,41 +1,42 @@
 "use client";
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Lock } from 'lucide-react';
+import { Lock } from 'lucide-react'
 import axios from "axios";
-
 
 export default function LoginPage() {
   const [form, setForm] = useState({ mobile: "", password: "" });
   const [message, setMessage] = useState("");
-  const { id } = useParams();
-
+  const searchParams = useSearchParams()
+  const redirectURL = searchParams.get('redirect') || '/'
+ 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+ 
     try {
       const response = await axios.post('/api/auth/login', form)
       const data = response.data
 
       setMessage(data.msg || data.error)
       setTimeout(() => {
-        window.location.href = `/services/${id}/reviews/confirm`; // redirect to home/dashboard
+        window.location.href = redirectURL
       }, 1500);
 
     } catch (error) {
       setMessage("Login Failed");
     }
   };
-
+ 
   return (
     <div className="min-h-screen flex flex-col  bg-white px-6 pt-10">
-
+ 
       <h2 className="text-3xl font-bold mb-2">Welcome</h2>
       <p className="mb-6 text-lg">
         Don’t have an account?{" "}
@@ -43,7 +44,7 @@ export default function LoginPage() {
           Register
         </Link>
       </p>
-
+ 
       <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -60,7 +61,7 @@ export default function LoginPage() {
             required
           />
         </div>
-
+ 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Password <span className="text-red-500">*</span>
@@ -78,7 +79,7 @@ export default function LoginPage() {
         <div className="flex justify-end mb-6">
           <p className="flex items-center gap-2 font-bold text-lg">
             <Lock className="w-5 h-5 text-gray-600 " />
-            <Link href="/Account/register" className="text-black font-semibold">
+            <Link href="/account/register" className="text-black font-semibold">
               Forgot Password ?
             </Link>
           </p>
@@ -90,10 +91,12 @@ export default function LoginPage() {
           Login
         </button>
       </form>
-
+ 
       {message && (
         <p className="mt-4 font-semibold text-red-600">{message}</p>
       )}
     </div>
   );
 }
+ 
+ 

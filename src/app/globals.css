@@ -1,30 +1,46 @@
-
+ 
 @import "tailwindcss";
-
-
-
+ 
+ 
+ 
 :root {
   --background: #dba144;
   --foreground:#1a1515;
 }
-
+ 
 .yellow{
   background-color: var(--background);
 }
 .text-color{
   color: var(--background);
 }
-
+ 
 body{
   color:var(--foreground);
-  cursor: pointer;
 }
 .btn{
-  cursor:pointer;;
+  cursor:pointer;
+  transition: all .3s ease-in-out;
 }
 .btn:hover{
   transform: scale(1.15);
 }
+ 
+input,textarea{
+  outline: none;
+  border: 1px solid #e2e2e2;
+  transition: all .2s ease-in-out;
+}
+ 
+input:focus{
+  border: none;
+  border: 1px solid #dba144;
+}
+textarea:focus{
+  border: none;
+  border: 1px solid #dba144;
+}
+ 
 @keyframes fade-in-down {
   from {
     opacity: 0;
@@ -35,5 +51,7 @@ body{
     transform: translateY(0);
   }
 }
-
-
+ 
+ 
+ 
+ 

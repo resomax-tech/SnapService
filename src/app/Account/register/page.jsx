@@ -62,8 +62,8 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white px-6 pt-10">
 
-      <h2 className="text-3xl font-bold mb-2">Create Account</h2>
-      <p className="mb-6 text-lg">
+      <h2 className="text-2xl font-bold mb-2">Create Account</h2>
+      <p className="mb-6 text-sm">
         Already have an account?{" "}
         <Link href="/Account/Login" className="text-[#dba144] font-semibold">
           Login
@@ -163,7 +163,7 @@ export default function RegisterPage() {
 
         <button
           type="submit"
-          className=" bg-[#dba144] text-white py-3 rounded-md hover:bg-yellow-600 font-semibold text-xl w-full mt-7"
+          className=" bg-[#dba144] text-white py-2 rounded-md hover:bg-yellow-600 font-semibold text-md w-full mt-7"
         >
           Register
         </button>
