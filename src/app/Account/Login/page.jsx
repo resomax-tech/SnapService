@@ -2,9 +2,9 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Lock } from 'lucide-react';
- 
- 
+import { Lock } from 'lucide-react'
+import axios from "axios";
+
 export default function LoginPage() {
   const [form, setForm] = useState({ mobile: "", password: "" });
   const [message, setMessage] = useState("");
@@ -15,6 +15,7 @@ export default function LoginPage() {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
+
  
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,12 +23,12 @@ export default function LoginPage() {
     try {
       const response = await axios.post('/api/auth/login', form)
       const data = response.data
- 
+
       setMessage(data.msg || data.error)
       setTimeout(() => {
         window.location.href = redirectURL
       }, 1500);
- 
+
     } catch (error) {
       setMessage("Login Failed");
     }
