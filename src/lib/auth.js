@@ -15,9 +15,12 @@ export const generateToken = async (user)=>{
         name: user.name,
         mobile: user.mobile
     }
-    const token = jwt.sign(payload, process.env.JWT_SECRET,{expiresIn: "15m"})
+    const token = jwt.sign(payload, process.env.JWT_SECRET,{expiresIn: "7d"})
     return token
 }
 
-
+export const decryptToken = async (token)=>{
+    const payload = jwt.decode(token)   
+    return payload
+}
 
