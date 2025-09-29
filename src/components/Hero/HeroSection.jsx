@@ -1,4 +1,3 @@
-// components/Hero/HeroSection.jsx
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -7,15 +6,15 @@ export default function HeroSection() {
   const router = useRouter();
 
   return (
-    <section className="flex flex-col items-center mt-16  p-6 text-center">
-      <h1 className="text-2xl font-bold text-font mb-6 leading-snug">
+<section className="flex flex-col items-center justify-center text-center bg-[#ffb22c] min-h-screen">
+      <h1 className="text-xl font-bold text-font mb-6 leading-snug pt-[30px]">
         <span className="text-white">HYDERABAD'S FIRST</span> MONTHLY
         BATHROOM <span className="text-white">CLEANING SERVICES</span>
       </h1>
 
       <button
         onClick={() => router.push("/services")}
-        className="px-3 py-1 mt-3 bg-white text-[#f4a300]  font-semibold rounded-sm shadow-lg btn "
+        className="px-3 py-1 mt-2 bg-white text-[#f4a300] font-semibold rounded-sm shadow-lg"
       >
         BOOK NOW
       </button>
@@ -23,7 +22,7 @@ export default function HeroSection() {
       <img
         src="/cleaning2.png"
         alt="Cleaning Service"
-        className="mt-8 max-w-xs h-96 object-contain mx-auto"
+        className="mt-5 max-h-[300px] object-contain"
       />
     </section>
   );

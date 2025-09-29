@@ -9,12 +9,10 @@ export default function Sidebar({ menuOpen, setMenuOpen }) {
 
   const links = [
     { href: "/about", label: "About Us" },
-    { href: "/services", label: "Services" },
-    { href: "/bookings", label: "Bookings" },
     { href: "/contact", label: "Contact Us" },
-    { href: "/privacy", label: "Privacy Policy" },
+    { href: "/admindashboard", label: "Privacy Policy" },
     { href: "/terms", label: "Terms" },
-    { href: "/account/register", label: "Account" },
+    { href: "/account/profile", label: "Account" },
   ];
 
   return (

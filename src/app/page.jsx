@@ -2,11 +2,15 @@
 "use client";
 
 import HeroSection from "@/components/Hero/HeroSection";
+import Preloader from "@/components/Preloader/Preloader";
+import PreloaderWrapper from "@/components/Preloader/PreloaderWrapper";
 
 export default function HomePage() {
   return (
-    <main className="flex flex-col flex-1 min-h-screen yellow">
-      <HeroSection />
-    </main>
+    <PreloaderWrapper>
+        <HeroSection />
+
+    </PreloaderWrapper>
+    
   );
 }
