@@ -1,59 +1,81 @@
 "use client";
+
 import { useState } from "react";
-import { ArrowRight } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
- 
-export default function ServiceDetails() {
+import { useRouter, useParams } from "next/navigation";
+import SignInModal from "@/components/SignInModal";
+
+export default function CommunityPage() {
   const { id } = useParams();
-  const [selected, setSelected] = useState("Select a Community");
   const router = useRouter();
- 
-  // build items
-  const items = [];
-  for (let i = 1; i <= 5; i++) {
-    items.push(
-      <option
-        key={i}
-        className="px-4 py-2 text-sm text-gray-700 cursor-pointer"
-        value={`Community ${i}`}
-      >
-        Community {i}
-      </option>
-    );
-  }
- 
+
+  const [community, setCommunity] = useState("");
+  const [showModal, setShowModal] = useState(false);
+
+  // Dummy login check → replace with real auth
+  const isSignedIn = false;
+
+  const communities = [
+    "Greenwood",
+    "Maplewood",
+    "Sunnyvale",
+    "Brookfield",
+    "Riverside",
+  ];
+
+  const handleNext = () => {
+    if (!community) return alert("Please select your community!");
+
+    if (isSignedIn) {
+      router.push(`/services/${id}/booking`);
+    } else {
+      setShowModal(true);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-white p-4 flex flex-col items-center">
-      <h1 className="text-2xl sm:text-3xl font-bold mt-10 text-center mb-10">
-        All Service List
+    <main className="max-w-lg mx-auto p-6 min-h-screen flex flex-col overflow-hidden">
+      <h1 className="text-xl font-bold mb-6 text-center text-amber-500">
+        Community List
       </h1>
- 
-      {/* Dropdown section */}
-      <div className="mt-8 sm:mt-10 w-full max-w-xs sm:max-w-sm px-2">
-        <p className="text-lg sm:text-xl font-bold mb-2 text-center text-gray-600">
-          Select Community
-        </p>
- 
-        <div className="relative">
-          <select
-            className="w-full border border-gray-300 rounded-md bg-white py-3 px-3 sm:px-4 shadow-sm outline-none text-gray-700 "
-            value={selected}
-            onChange={(e) => setSelected(e.target.value)}
-          >
-            <option value="Select a Community">Select a Community</option>
-            {items}
-          </select>
-        </div>
- 
-        <button
-          className="mt-6 sm:mt-10 w-1/2 sm:w-1/2 mx-auto bg-[#dba144] text-white py-3 rounded-md hover:bg-yellow-600 shadow-md flex items-center justify-center gap-2"
-          onClick={() => router.push(`/services/${id}/reviews/confirm`)}
-        >
-          Proceed <ArrowRight className="w-5 h-5" />
-        </button>
-      </div>
-    </div>
+
+      <h2 className="text-md font-semibold mb-4">Select Your Community</h2>
+
+      {/* Dropdown field */}
+      <select
+        value={community}
+        onChange={(e) => setCommunity(e.target.value)}
+        className="w-full p-2 mb-6 border rounded-md text-sm"
+      >
+        <option value="" disabled>
+          -- Select your community --
+        </option>
+        {communities.map((comm) => (
+          <option key={comm} value={comm}>
+            {comm}
+          </option>
+        ))}
+      </select>
+
+      {/* Next button */}
+      <button
+        onClick={handleNext}
+        disabled={!community}
+        className={`px-6 py-3 rounded-md w-full text-lg font-semibold transition-colors ${
+          community
+            ? "bg-amber-400 text-white hover:bg-white hover:text-amber-400 border border-amber-400"
+            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+        }`}
+      >
+        Next
+      </button>
+
+      {/* SignIn Modal */}
+      {showModal && (
+        <SignInModal
+          onClose={() => setShowModal(false)}
+          redirectTo={`/services/${id}/booking`}
+        />
+      )}
+    </main>
   );
 }
- 
- 
