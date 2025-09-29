@@ -102,7 +102,7 @@ export default function AboutPage() {
       >
         <button
         onClick={handleClick} //  FIXED
-         className="bg-[#dba144] text-white px-6 py-3 rounded-xl font-semibold text-lg shadow-md">
+         className="bg-[#dba144] text-white px-6 py-3 rounded-xl font-semibold text-lg shadow-md btn">
           Book Your Cleaning Now
         </button>
       </motion.section>

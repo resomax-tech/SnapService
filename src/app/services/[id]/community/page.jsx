@@ -47,7 +47,7 @@ export default function ServiceDetails() {
  
         <button
           className="mt-6 sm:mt-10 w-1/2 sm:w-1/2 mx-auto bg-[#dba144] text-white py-3 rounded-md hover:bg-yellow-600 shadow-md flex items-center justify-center gap-2"
-          onClick={() => router.push(`/services/${id}/reviews`)}
+          onClick={() => router.push(`/services/${id}/reviews/confirm`)}
         >
           Proceed <ArrowRight className="w-5 h-5" />
         </button>

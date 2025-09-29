@@ -52,7 +52,7 @@ export default function RegisterPage() {
       });
 
       setTimeout(() => {
-        window.location.href = "/Account/Login";
+        window.location.href = "/account/Login";
       }, 1500);
     } catch (error) {
       setMessage("Failed to register")
@@ -65,7 +65,7 @@ export default function RegisterPage() {
       <h2 className="text-2xl font-bold mb-2">Create Account</h2>
       <p className="mb-6 text-sm">
         Already have an account?{" "}
-        <Link href="/Account/Login" className="text-[#dba144] font-semibold">
+        <Link href="/account/login" className="text-[#dba144] font-semibold">
           Login
         </Link>
       </p>

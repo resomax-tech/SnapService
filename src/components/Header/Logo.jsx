@@ -4,7 +4,7 @@ export default function Logo() {
     <img
       src="/headerlogo.png"
       alt="Cleaning Service"
-      className="max-w-xs h-6 object-contain mx-auto ps-2"
+      className="ml-8 h-6 object-contain mx-auto ps-2"
     />
   );
 }
