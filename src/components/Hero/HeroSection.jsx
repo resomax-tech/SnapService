@@ -7,13 +7,13 @@ export default function HeroSection() {
 
   return (
 <section className="flex flex-col items-center justify-center text-center bg-[#ffb22c] min-h-screen">
-      <h1 className="text-xl font-bold text-font mb-6 leading-snug pt-[30px]">
+      <h1 className="text-2xl font-bold text-font mb-6 leading-snug pt-[30px]">
         <span className="text-white">HYDERABAD'S FIRST</span> MONTHLY
         BATHROOM <span className="text-white">CLEANING SERVICES</span>
       </h1>
 
       <button
-        onClick={() => router.push("/services")}
+        onClick={() => router.push("/customer/services")}
         className="px-3 py-1 mt-2 bg-white text-[#f4a300] font-semibold rounded-sm shadow-lg"
       >
         BOOK NOW

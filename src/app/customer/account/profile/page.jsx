@@ -22,8 +22,8 @@ export default function ProfilePage() {
         <div>
           <h2 className="text-lg font-semibold">John Doe</h2>
           <button
-            onClick={() => router.push("/account/profile/edit")}
-            className="mt-1 text-sm px-3 py-1 bg-green-600 text-white rounded-md"
+            onClick={() => router.push("/customer/account/profile/edit")}
+            className="mt-1 text-sm px-3 py-1 bg-gray-600 text-white rounded-md"
           >
             Edit Profile
           </button>

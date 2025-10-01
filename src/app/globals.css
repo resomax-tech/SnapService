@@ -18,6 +18,11 @@
 body{
   color:var(--foreground);
 }
+
+button{
+  cursor: pointer !important;
+}
+
 .btn{
   cursor:pointer;
   transition: all .3s ease-in-out;

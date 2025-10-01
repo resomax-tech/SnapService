@@ -8,11 +8,13 @@ export default function Sidebar({ menuOpen, setMenuOpen }) {
   if (!menuOpen) return null;
 
   const links = [
-    { href: "/about", label: "About Us" },
-    { href: "/contact", label: "Contact Us" },
-    { href: "/admindashboard", label: "Privacy Policy" },
+    { href: "/customer/about", label: "About Us" },
+    { href: "/customer/contact", label: "Contact Us" },
+    { href: "/privacy", label: "Privacy Policy" },
     { href: "/terms", label: "Terms" },
-    { href: "/account/profile", label: "Account" },
+    { href: "/customer/account/profile", label: "Account" },
+    { href: "/admin", label: "Admin" },
+
   ];
 
   return (

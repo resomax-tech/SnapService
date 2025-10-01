@@ -9,7 +9,7 @@ export default function AboutPage() {
   const router = useRouter();
 
   const handleClick = () => {
-    router.push("/services"); //  goes to services page
+    router.push("/customer/services"); //  goes to services page
   };
   return (
     <main className="bg-gray-50 min-h-screen text-black">

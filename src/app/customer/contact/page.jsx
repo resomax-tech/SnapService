@@ -1,5 +1,10 @@
 "use client";
 
+import { MdLocationPin,MdLocalPhone } from "react-icons/md";
+import { IoMailSharp } from "react-icons/io5";
+
+
+
 export default function ContactPage() {
   return (
     <main className="flex flex-col min-h-screen bg-white text-black">
@@ -58,7 +63,7 @@ export default function ContactPage() {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-[#dba144] text-white font-bold py-3 rounded-xl shadow-md hover:bg-black hover:text-[#dba144] transition-"
+            className="w-full bg-[#dba144] text-white font-bold py-3 rounded-xl shadow-md hover:bg-white hover:text-[#dba144] transition-"
           >
             Send Message
           </button>
@@ -74,15 +79,15 @@ export default function ContactPage() {
 
         <div className="space-y-4 text-lg">
           <p className="flex items-center gap-3">
-            <span className="text-2xl">📍</span>
+            <span className="text-2xl"><MdLocationPin size={24}/></span>
             Hyderabad, India
           </p>
           <p className="flex items-center gap-3">
-            <span className="text-2xl">📞</span>
+            <span className="text-2xl"><MdLocalPhone size={24} /></span>
             +91 98765 43210
           </p>
           <p className="flex items-center gap-3">
-            <span className="text-2xl">✉️</span>
+            <span className="text-2xl"><IoMailSharp size={24}/></span>
             support@snapservice.com
           </p>
         </div>

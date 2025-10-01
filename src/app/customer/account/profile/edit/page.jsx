@@ -17,7 +17,7 @@ export default function EditProfilePage() {
     e.preventDefault();
     // TODO: Call your API to update user
     console.log({ name, gender, phone });
-    router.push("/account/profile"); // redirect back to profile
+    router.push("/customer/account/profile"); // redirect back to profile
   };
 
   return (
