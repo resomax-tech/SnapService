@@ -4,10 +4,20 @@ import Worker from "@/models/WorkerModel";
 import Community from "@/models/CommunityModel";
 
 
-export async function GET(req) {
+export async function GET(req, context) {
     try {
         await dbConnect()
-        const workers = await Worker.find({})
+        const { searchParams } = new URL(req.url)
+        const query = {}
+
+        const community = searchParams.get("community")
+        const workType = searchParams.get("workType")
+
+        if (community) query.community = community
+        if (workType) query.workType = workType
+        
+        const workers = await Worker.find(query)
+
         return NextResponse.json({ data: workers }, { status: 200 })
     } catch (error) {
         return NextResponse.json({ error: error.message }, { status: 500 })
@@ -21,7 +31,7 @@ export async function POST(req) {
         const worker = await Worker.create(body)
         return NextResponse.json(worker, { status: 201 })
     } catch (err) {
-                console.log(err.message);
+        console.log(err.message);
 
         if (err.code === 11000) {
             return NextResponse.json(

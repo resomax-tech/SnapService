@@ -7,7 +7,8 @@ export async function GET(req, context) {
     try {
         await dbConnect()
         const { params } = await context
-        const worker = await Worker.findById(params.id).populate("community", "name")
+        
+        const worker = await Worker.findById(params.id)
         return NextResponse.json({ data: worker }, { status: 200 })
     } catch (err) {
         return NextResponse.json({ error: err.message }, { status: 500 })

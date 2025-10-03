@@ -6,7 +6,7 @@ export default function HeroSection() {
   const router = useRouter();
 
   return (
-<section className="flex flex-col items-center justify-center text-center bg-[#ffb22c] min-h-screen">
+    <section className="flex flex-col items-center justify-center text-center bg-[#ffb22c] min-h-screen">
       <h1 className="text-xl font-bold text-font mb-6 leading-snug pt-[30px]">
         <span className="text-white">HYDERABAD'S FIRST</span> MONTHLY
         BATHROOM <span className="text-white">CLEANING SERVICES</span>

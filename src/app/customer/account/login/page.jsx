@@ -40,7 +40,7 @@ export default function LoginPage() {
       <h2 className="text-3xl font-bold mb-2">Welcome</h2>
       <p className="mb-6 text-lg">
         Don’t have an account?{" "}
-        <Link href="/account/register" className="text-[#dba144] font-semibold">
+        <Link href="/customer/account/register" className="text-[#dba144] font-semibold">
           Register
         </Link>
       </p>
@@ -79,7 +79,7 @@ export default function LoginPage() {
         <div className="flex justify-end mb-6">
           <p className="flex items-center gap-2 font-bold text-lg">
             <Lock className="w-5 h-5 text-gray-600 " />
-            <Link href="/account/register" className="text-black font-semibold">
+            <Link href="/customer/account/register" className="text-black font-semibold">
               Forgot Password ?
             </Link>
           </p>
