@@ -1,32 +1,27 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/authContext";
+import Loader from "@/components/Preloader/Loader";
 
 export default function BookingsPage() {
-  const [mounted, setMounted] = useState(false);
-  const [bookings, setBookings] = useState([]);
+  // const [bookings, setBookings] = useState([]);
+  const { isLoggedIn, loading } = useAuth()
 
-  useEffect(() => {
-    setMounted(true);
-    const stored = JSON.parse(localStorage.getItem("bookings") || "[]");
-    setBookings(stored);
-  }, []);
+  if (loading) return <Loader />
 
-  if (!mounted) return null;
+  if (!isLoggedIn) {
+    return (
+      <p className="text-gray-600">please sign in.</p>
+    )
+  }
 
-  const handleCancel = (id) => {
-    const updated = bookings.filter((b) => b.id !== id);
-    setBookings(updated);
-    localStorage.setItem("bookings", JSON.stringify(updated));
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <h1 className="text-2xl font-bold mb-6 mt-5">My Bookings</h1>
+      <p className="text-gray-600">No bookings found.</p>
 
-      {bookings.length === 0 ? (
-        <p className="text-gray-600">No bookings found.</p>
-      ) : (
-        <div className="space-y-4">
+      {/* <div className="space-y-4">
           {bookings.map((booking) => (
             <div
               key={booking.id}
@@ -60,8 +55,8 @@ export default function BookingsPage() {
               </button>
             </div>
           ))}
-        </div>
-      )}
+        </div> */}
+
     </div>
   );
 }

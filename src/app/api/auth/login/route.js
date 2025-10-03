@@ -13,8 +13,6 @@ export async function POST(req) {
         const body = await req.json()
         const { mobile, password } = body
 
-        console.log(mobile, password)
-
         const user = await User.findOne({ mobile })
         if (!user) {
             return NextResponse.json({ msg: "user not registered" }, { status: 404 })
@@ -27,12 +25,12 @@ export async function POST(req) {
         const cookieStore = await cookies()
         cookieStore.set("access_token", token, {
             httpOnly: true,
-            secure: true,
-            sameSite: 'strict',
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",  // more forgiving than strict
             path: "/"
         })
 
-        return NextResponse.json({msg: `Login successful! Welcome ${user.name}`}, {status: 200})
+        return NextResponse.json({ msg: `Login successful! Welcome ${user.name}` }, { status: 200 })
 
     } catch (error) {
         console.log("Error", error.message)
@@ -45,8 +43,8 @@ export async function GET(req) {
     try {
         await dbConnect()
         const data = await User.find({})
-        return NextResponse.json({registered_users: data})
+        return NextResponse.json({ registered_users: data })
     } catch (error) {
-        return NextResponse.json({msg: error.message}, {status: 500})
+        return NextResponse.json({ msg: error.message }, { status: 500 })
     }
 }

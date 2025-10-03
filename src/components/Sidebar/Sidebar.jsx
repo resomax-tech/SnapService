@@ -12,7 +12,7 @@ export default function Sidebar({ menuOpen, setMenuOpen }) {
     { href: "/contact", label: "Contact Us" },
     { href: "/admindashboard", label: "Privacy Policy" },
     { href: "/terms", label: "Terms" },
-    { href: "/account/profile", label: "Account" },
+    { href: "/customer/account/profile", label: "Account" },
   ];
 
   return (
