@@ -11,15 +11,10 @@ export default function LayoutWrapper({ children }) {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    // Render without conditional padding to avoid mismatch
-    return <main>{children}</main>;
-  }
+  if (!mounted) return <main>{children}</main>;
 
   const isHome = pathname === "/";
-  return (
-    <main className={!isHome ? "pt-16 pb-16" : ""}>
-      {children}
-    </main>
-  );
+  const paddingClass = isHome ? "" : "pt-16 pb-16";
+
+  return <main className={paddingClass}>{children}</main>;
 }

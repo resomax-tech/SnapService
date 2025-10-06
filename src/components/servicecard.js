@@ -2,42 +2,23 @@
 
 import Link from "next/link";
 
-export default function ServiceCard({ service, onViewMore }) {
+export default function ServiceCard({ service }) {
   return (
-    <div className="bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow duration-300 flex justify-evenly items-center">
-      {/* Left Side - Image */}
-      <div className="m-3 w-42">
-        <img
-          src={service.image}
-          alt={service.name}
-          className="w-full h-32 object-cover rounded-2xl"
-        />
-      </div>
+    <div className="bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow duration-300 w-full max-w-sm">
+      {/* Image on top */}
+      <img
+        src={service.image}
+        alt={service.name}
+        className="w-full h-48 object-cover"
+      />
 
-      {/* Right Side - Content */}
-      <div className="py-4 w-64 ms-10">
-        <div>
-          <h2 className="text-xl font-bold">{service.name}</h2>
+      {/* Content below image */}
+      <div className="p-4 flex flex-col">
+        <h2 className="text-xl font-bold mb-2">{service.name}</h2>
 
-          {/* Price */}
-          <div className="flex items-center justify-between mb-2">
-            <span className="font-semibold text-sm text-[#1c1b1b]">
-              {service.price}
-            </span>
-          </div>
-
-          {/* View More → Opens modal */}
-          <button
-            onClick={() => onViewMore(service.id)}
-            className="text-md text-[#092F9C] font-semibold hover:underline mb-2"
-          >
-            View More
-          </button>
-        </div>
-
-        {/* Book Now → Still navigates */}
-        <Link href={`/services/${service.id}/community`}>
-          <button className="w-2/3 bg-[#2d2c2b] text-white py-2 px-2 rounded-lg font-semibold transition">
+        {/* Book Now button */}
+        <Link href={`/customer/services/${service.id}/community`}>
+          <button className="bg-amber-400 text-white py-2 px-4 rounded-md hover:bg-amber-500 transition-colors ml-50">
             Book Now
           </button>
         </Link>

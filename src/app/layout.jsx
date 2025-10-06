@@ -1,4 +1,3 @@
-// app/layout.jsx
 import "./globals.css";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import Header from "@/components/Header/Header";
@@ -11,7 +10,7 @@ import PreloaderWrapper from "@/components/Preloader/PreloaderWrapper";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-plus-jakarta-sans", // updated variable name for clarity
+  variable: "--font-plus-jakarta-sans",
 });
 
 export const metadata = {
