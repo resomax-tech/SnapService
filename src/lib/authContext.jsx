@@ -22,6 +22,7 @@ export function AuthProvider({ children }) {
                     updateBooking({ user: response.data.user })
                 }
             } catch (error) {
+                setIsLoggedIn(false)
                 setUser(null)
             } finally {
                 setLoading(false)

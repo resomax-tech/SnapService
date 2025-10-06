@@ -1,9 +1,23 @@
 "use client";
 
+import axios from "axios";
 import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 export default function Step1({ formData, setFormData, nextStep }) {
   const router = useRouter();
+  const [availableDates, setAvailableDates] = useState([])
+
+  useEffect(()=>{
+    const fetchDates = async () => {
+      try {
+        const response = await axios.get('/api/availability',)
+      } catch (error) {
+        console.log("error: ", error.message);        
+      }
+    }
+  },[])
+
 
   return (
     <div>

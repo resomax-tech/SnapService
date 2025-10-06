@@ -11,7 +11,9 @@ export default function BookingsPage() {
 
   if (!isLoggedIn) {
     return (
-      <p className="text-gray-600">please sign in.</p>
+      <div className="min-h-screen bg-gray-50 p-6">
+        <p className="text-gray-600 text-xl text-center">please sign in.</p>
+      </div>
     )
   }
 
@@ -20,6 +22,7 @@ export default function BookingsPage() {
     <div className="min-h-screen bg-gray-50 p-6">
       <h1 className="text-2xl font-bold mb-6 mt-5">My Bookings</h1>
       <p className="text-gray-600">No bookings found.</p>
+
 
       {/* <div className="space-y-4">
           {bookings.map((booking) => (
