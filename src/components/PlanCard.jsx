@@ -6,8 +6,8 @@ import ViewMoreModal from "./ViewMoreModal";
 
 export default function PlanCard({ plan, serviceId, community }) {
   const [showModal, setShowModal] = useState(false);
+  const [bathrooms, setBathrooms] = useState(1);
 
-  // Map plan IDs to images inside PlanCard
   const planImages = {
     "classic-2w": "/cleaning7.jpg",
     "classic-4w": "/cleaning6.png",
@@ -17,54 +17,64 @@ export default function PlanCard({ plan, serviceId, community }) {
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow duration-300 flex items-center">
-        {/* Left Side - Image */}
-        <div className="m-3 w-42">
-          <img
-            src={planImages[plan.id] || "/cleaning-placeholder.jpg"}
-            alt={plan.name}
-            className="w-full h-32 object-cover rounded-2xl"
-          />
-        </div>
+      <div className="bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow duration-300 flex flex-row p-4 gap-4 items-center">
+        {/* Image Left */}
+        <img
+          src={planImages[plan.id] || "/cleaning-placeholder.jpg"}
+          alt={plan.name}
+          className="w-32 h-32 object-cover rounded-2xl "
+        />
 
-        {/* Right Side - Content */}
-        <div className="py-4 w-64 ms-10 flex flex-col justify-between">
+        {/* Right Content */}
+        <div className="flex-1 flex flex-col items-center ">
+          {/* Plan Details */}
           <div>
-            <h2 className="text-xl font-bold mb-2">{plan.name}</h2>
+            <h2 className="text-lg font-bold ">{plan.name}</h2>
+            <span className="text-sm font-semibold ">{plan.weeks}</span>
+            <div className="flex items-center">
 
-            {/* Price */}
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-semibold text-sm text-[#1c1b1b]">
-                ${plan.price}
-              </span>
+              <button
+                onClick={() => setShowModal(true)}
+                className="text-md text-[#092F9C] font-semibold hover:underline "
+              >   
+                View More
+              </button>
+
+
             </div>
-
-            {/* View More → Opens modal */}
-            <button
-              onClick={() => setShowModal(true)}
-              className="text-md text-[#092F9C] font-semibold hover:underline mb-2"
-            >
-              View More
-            </button>
           </div>
 
-          {/* Book Now → navigates to next step */}
-          <Link
-            href={`/customer/services/${serviceId}/planselection?community=${community}&plan=${plan.id}`}
-          >
-            <button className="w-2/3 bg-[#2d2c2b] text-white py-2 px-2 rounded-lg font-semibold transition hover:bg-[#1c1b1b]">
-              Book Now
+          {/* Buttons */}
+          <div className="flex items-center mb-4 mt-3 shadow justify-center w-30 border border-gray-100 h-8 rounded-md">
+            <button
+              onClick={() => setBathrooms((prev) => Math.max(1, prev - 1))}
+              className=" px-3 py-1 rounded-l hover:bg-gray-400"
+            >
+              -
             </button>
-          </Link>
+            <span className="px-4">{bathrooms}</span>
+            <button
+              onClick={() => setBathrooms((prev) => prev + 1)}
+              className=" px-3 py-1 rounded-r hover:bg-gray-400"
+            >
+              +
+            </button>
+          </div>
+          <div className="flex items-center">
+            <Link
+              href={`/customer/services/${serviceId}/booking?community=${community}&plan=${plan.id}&bathrooms=${bathrooms}`}
+            >
+              <button className="bg-[#2d2c2b] text-white py-2 px-10 rounded-lg font-semibold hover:bg-[#1c1b1b]">
+                Book Now
+              </button>
+            </Link>
+
+          </div>
         </div>
       </div>
 
-      {/* Modal */}
       {showModal && (
-        <ViewMoreModal
-          serviceType={plan.name}
-          onClose={() => setShowModal(false)}
-        />
+        <ViewMoreModal serviceType={plan.type} onClose={() => setShowModal(false)} />
       )}
     </>
   );

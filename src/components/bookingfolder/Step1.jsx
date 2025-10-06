@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 
 export default function Step1({ formData, setFormData, nextStep }) {
@@ -18,15 +17,13 @@ export default function Step1({ formData, setFormData, nextStep }) {
       </div>
 
       <div className="flex justify-between mt-6">
-        {/* Previous → go to community page */}
         <button
-          onClick={() => router.push("/community")}
+          onClick={() => router.back()}
           className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
         >
           Previous
         </button>
 
-        {/* Next → go to step2 */}
         <button
           disabled={!formData.date}
           onClick={nextStep}
@@ -38,4 +35,3 @@ export default function Step1({ formData, setFormData, nextStep }) {
     </div>
   );
 }
-

@@ -18,7 +18,7 @@ export default function ServiceCard({ service }) {
 
         {/* Book Now button */}
         <Link href={`/customer/services/${service.id}/community`}>
-          <button className="bg-amber-400 text-white py-2 px-4 rounded-md hover:bg-amber-500 transition-colors ml-60">
+          <button className="bg-amber-400 text-white py-2 px-4 rounded-md hover:bg-amber-500 transition-colors ml-50">
             Book Now
           </button>
         </Link>

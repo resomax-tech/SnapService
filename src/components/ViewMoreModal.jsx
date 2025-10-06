@@ -7,14 +7,14 @@ import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
 
 const serviceGroups = {
-    "Basic Cleaning": {
-        type: "Basic Cleaning",
-        images: ["/basic1.png", "/basic2.png", "/basic3.webp"],
-    },
-    "Deep Cleaning": {
-        type: "Deep Cleaning",
-        images: ["/deep1.png", "/deep2.png", "/deep3.png"],
-    },
+  Classic: {
+    type: "Classic Cleaning",
+    images: ["/basic1.png", "/basic2.png", "/basic3.webp"],
+  },
+  Deep: {
+    type: "Deep Cleaning",
+    images: ["/deep1.png", "/deep2.png", "/deep3.png"],
+  },
 };
 
 const equipmentList = ["Vacuum Cleaner", "Mop", "Broom", "Disinfectant"];
