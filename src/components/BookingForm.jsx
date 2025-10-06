@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 import StepIndicator from "@/components/bookingfolder/StepIndicator";
 import Step1 from "@/components/bookingfolder/Step1";
