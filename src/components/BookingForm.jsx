@@ -10,6 +10,11 @@ import { useBooking } from "@/lib/bookingContext";
 
 
 export default function BookingForm() {
+  const searchParams = useSearchParams();
+  const communityParam = searchParams.get("community") || "";
+  const planParam = searchParams.get("plan") || "";
+  const bathroomsParam = parseInt(searchParams.get("bathrooms")) || 1;
+
   const [step, setStep] = useState(1);
   const { bookingData, updateBooking } = useBooking();
 
@@ -63,10 +68,8 @@ export default function BookingForm() {
 
   return (
     <div>
-      {/* Step Indicator */}
       <StepIndicator step={step} />
 
-      {/* Steps */}
       {step === 1 && (
         <Step1 formData={formData} setFormData={setFormData} nextStep={nextStep} />
       )}

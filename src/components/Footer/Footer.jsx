@@ -10,7 +10,7 @@ export default function Footer() {
 
   const links = [
     { href: "/", label: "Home", Icon: LuHouse },
-    { href: "/services", label: "Services", Icon: LuSettings },
+    { href: "/customer/services", label: "Services", Icon: LuSettings },
     { href: "/customer/bookings", label: "Bookings", Icon: LuShoppingBag },
     { href: "/customer/account", label: "Account", Icon: LuUserRound },
   ];
