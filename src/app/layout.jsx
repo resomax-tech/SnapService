@@ -1,5 +1,12 @@
 import "./globals.css";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import Header from "@/components/Header/Header";
+import Footer from "@/components/Footer/Footer";
+import LayoutWrapper from "@/components/LayoutWrapper";
+import { BookingProvider } from "@/lib/bookingContext";
+import { AuthProvider } from "@/lib/authContext";
+
+import PreloaderWrapper from "@/components/Preloader/PreloaderWrapper";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -15,7 +22,15 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${plusJakartaSans.className} antialiased`}>
-        {children} {/* Render child layouts */}
+        <BookingProvider>
+          <AuthProvider>
+            <div className="flex flex-col min-h-screen">
+              <Header />
+              <LayoutWrapper>{children}</LayoutWrapper>
+              <Footer />
+            </div>
+          </AuthProvider>
+        </BookingProvider>
       </body>
     </html>
   );

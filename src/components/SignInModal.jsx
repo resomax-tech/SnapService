@@ -1,17 +1,20 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/authContext";
 
 export default function SignInModal({ onClose, redirectTo }) {
   const router = useRouter();
 
-  const handleSignIn = () => {
-    // Here you can do your real auth login logic (e.g., next-auth)
-    // For now, we simulate a successful login
-    const isLoggedIn = true;
+  const {user, isLoggedIn} = useAuth()
 
+  const handleSignIn = () => {
+    // For now, we simulate a successful login
     if (isLoggedIn) {
       router.push(redirectTo); // Redirect to the booking page
+    }
+    else{
+      router.push("/customer/account/login")
     }
   };
 

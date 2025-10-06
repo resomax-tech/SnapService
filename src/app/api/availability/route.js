@@ -8,14 +8,15 @@ export async function GET(req) {
     try {
         await dbConnect()
         const { searchParams } = new URL(req.url);
-        const communityId = searchParams.get('community')
-        const planType = searchParams.get('plan')
 
-        const workers = await Worker.find({ community: communityId, workType: planType });
+        const community = searchParams.get('community')
+        const workType = searchParams.get('plan')
+        
+        const workers = await Worker.find({ community: new mongoose.Types.ObjectId(community), workType });
 
         const totalSlots = workers.reduce((sum, w) => sum + w.maxJobs, 0);
-
-        const availableDates = await checkAvailability(totalSlots, communityId, planType)
+        
+        const availableDates = await checkAvailability(totalSlots, community, workType)
 
         return NextResponse.json({ availableDates })
     } catch (error) {
@@ -23,30 +24,61 @@ export async function GET(req) {
     }
 }
 
-const checkAvailability = async (totalSlots, communityId, planType) => {
-    const availability = {}
+const checkAvailability = async (totalSlots, communityId, workType) => {
+  const availability = {};
 
-    for (let i = 0; i < 30; i++) {
-        const date = new Date()
-        date.setDate(date.getDate() + i)
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
 
-        if (date.getDay() === 0) {
-            availability[date.toISOString().split("T")[0]] = { available: 0, total: totalSlots }
-            continue
-        }
+  const endDate = new Date(today);
+  endDate.setUTCDate(today.getUTCDate() + 30);
 
-        const booked = await Job.aggregate([
-            { $match: { community: new mongoose.Types.ObjectId(String(communityId)), date, type: planType.toLowerCase() } },
-            { $group: { _id: null, totalBathrooms: { $sum: "$bathrooms" } } }
-        ])
-        const bookedBathrooms = booked[0]?.totalBathrooms || 0;
+  // 🔹 Single aggregation for all 30 days
+  const booked = await Job.aggregate([
+    {
+      $match: {
+        community: new mongoose.Types.ObjectId(String(communityId)),
+        workType: workType.toLowerCase(),
+        date: { $gte: today, $lt: endDate },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          $dateToString: { format: "%Y-%m-%d", date: "$date" }, // group by day
+        },
+        totalBathrooms: { $sum: "$bathrooms" },
+      },
+    },
+  ]);
 
-        availability[date.toISOString().split("T")[0]] = {
-            available: totalSlots - bookedBathrooms,
-            total: totalSlots
-        }
+  
+  // Convert aggregation result into a map { "2025-03-07": 5, "2025-03-08": 10, ... }
+  const bookedMap = booked.reduce((acc, b) => {
+    acc[b._id] = b.totalBathrooms;
+    return acc;
+  }, {});
 
+  // Build availability for each of the next 30 days
+  for (let i = 0; i < 30; i++) {
+    const date = new Date(today);
+    date.setUTCDate(today.getUTCDate() + i);
+
+    const dateKey = date.toISOString().split("T")[0];
+
+    // Skip Sundays
+    if (date.getUTCDay() === 0) {
+      availability[dateKey] = { available: 0, total: totalSlots };
+      continue;
     }
 
-    return availability
-}
+    const bookedBathrooms = bookedMap[dateKey] || 0;
+
+    availability[dateKey] = {
+      available: totalSlots - bookedBathrooms,
+      total: totalSlots,
+    };
+  }
+
+  return availability;
+};

@@ -2,17 +2,17 @@
 import mongoose from "mongoose";
 
 const JobSchema = new mongoose.Schema({
-    subscriptionId: {
+    subscription: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Subscription",
         required: true
     },
-    workerId: {
+    worker: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Worker",
         default: null
     },
-    communityId: {
+    community: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Community",
         required: true
@@ -26,7 +26,7 @@ const JobSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    jobType: {
+    workType: {
         type: String,
         enum: ["classic", "deep"],
         required: true

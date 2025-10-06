@@ -12,8 +12,8 @@ export const comparePassword = async (password, hash)=>{
 export const generateToken = async (user)=>{
     const payload = {
         sub: user._id,
-        name: user.name,
-        mobile: user.mobile
+        email: user.email,
+        role: user.role
     }
     const token = jwt.sign(payload, process.env.JWT_SECRET,{expiresIn: "7d"})
     return token
