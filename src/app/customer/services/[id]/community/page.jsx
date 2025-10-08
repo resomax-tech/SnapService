@@ -16,6 +16,8 @@ export default function CommunityPage() {
     const fetchCommunities = async () => {
       try {
         const response = await axios.get('/api/community/')
+        // console.log("communities: ", response.data.communities);
+        
         setCommunities(response.data.communities)
       } catch (error) {
         console.log("error: ", error.message)
@@ -94,7 +96,7 @@ export default function CommunityPage() {
       {/* Community Dropdown */}
       <div className="mb-6 w-full max-w-sm relative">
         <select
-          value={selectedCommunity}
+          value={selectedCommunity?.name || ""}
           onChange={(e) => handleCommunitySelect(e.target.value)}
           className="w-full p-3 pr-10 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-100 focus:border-gray-100 appearance-none cursor-pointer"
         >
