@@ -27,6 +27,7 @@ export async function GET(req) {
     try {
         await dbConnect()
         const communities = await Community.find({}, "name plans")
+        console.log("Communities retrieved: ", communities)
         return NextResponse.json({ communities: communities }, { status: 200 })
     } catch (err) {
         return NextResponse.json({ error: err.message }, { status: 500 })
