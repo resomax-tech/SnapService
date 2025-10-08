@@ -9,7 +9,7 @@ export default function ServicesPage() {
   };
 
   return (
-    <div className="min-h-screen p-4 flex flex-col items-center">
+    <div className="p-4 flex flex-col items-center">
       <h1 className="text-2xl font-bold mb-6 mt-6">Our Services</h1>
 
       <ServiceCard service={service} />

@@ -16,7 +16,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-inner h-16 ">
+    <footer className="fixed bottom-0 left-0 right-0 bg-white shadow-inner h-16 ">
       <nav className="flex justify-around items-center py-2 text-sm">
         {links.map(link => (
           <FooterLink key={link.href} {...link} pathname={pathname} />

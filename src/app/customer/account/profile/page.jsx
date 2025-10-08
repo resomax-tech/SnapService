@@ -32,7 +32,7 @@ export default function ProfilePage() {
 
 
   return (
-    <div className="max-w-md mx-auto bg-gray-50 min-h-screen p-6">
+    <div className="max-w-md mx-auto bg-gray-50 p-6">
       {/* Top: Avatar + Name */}
       <div className="flex flex-col items-center gap-4 ">
         {/* <Avatar
