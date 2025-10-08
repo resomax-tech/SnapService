@@ -45,7 +45,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col  bg-white px-6 pt-10">
 
-      <h2 className="text-3xl font-bold mb-2">Welcome</h2>
+      <h2 className="text-2xl font-bold mb-2">Welcome</h2>
       <p className="mb-6 text-lg">
         Don’t have an account?{" "}
         <Link href="/customer/account/register" className="text-[#dba144] font-semibold">

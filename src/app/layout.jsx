@@ -25,9 +25,7 @@ export default function RootLayout({ children }) {
         <BookingProvider>
           <AuthProvider>
             <div className="flex flex-col min-h-screen">
-              <Header />
-              <LayoutWrapper>{children}</LayoutWrapper>
-              <Footer />
+              {children}
             </div>
           </AuthProvider>
         </BookingProvider>

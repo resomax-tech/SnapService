@@ -15,9 +15,10 @@ export default function CommunityPage() {
   useEffect(() => {
     const fetchCommunities = async () => {
       try {
-        const response = await axios.get("/api/community/");
-        console.log("Communities fetched:", response.data.communities);
-        setCommunities(response.data.communities);
+        const response = await axios.get('/api/community/')
+        // console.log("communities: ", response.data.communities);
+        
+        setCommunities(response.data.communities)
       } catch (error) {
         console.log("Error fetching communities:", error.message);
       }

@@ -10,7 +10,7 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="bg-white  fixed shadow-md top-0 left-0 right-0 z-50 h-16">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md h-16">
       <div className="flex items-center justify-center px-4 py-3 m-2">
         <HamburgerButton onClick={() => setMenuOpen(true)} />
         <Logo />

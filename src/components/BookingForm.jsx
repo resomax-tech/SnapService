@@ -68,7 +68,7 @@ export default function BookingForm() {
   };
 
   useEffect(() => {
-    // console.log("BookingData updated:", bookingData);
+    console.log("BookingData updated:", bookingData);
   }, [bookingData]);
 
   if (loading) return <Loader />

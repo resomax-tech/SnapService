@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 export default function GuestAccount(){
   const router = useRouter();
     return (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center pt-16 min-h-screen">
         <img
           src="/service.webp"
           alt="service"

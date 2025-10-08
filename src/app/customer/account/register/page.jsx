@@ -63,7 +63,7 @@ export default function RegisterPage() {
     <div className="min-h-screen flex flex-col bg-white px-6 pt-10">
 
       <h2 className="text-2xl font-bold mb-2">Create Account</h2>
-      <p className="mb-6 text-sm">
+      <p className="mb-6 text-xl">
         Already have an account?{" "}
         <Link href="/customer/account/login" className="text-[#dba144] font-semibold">
           Login

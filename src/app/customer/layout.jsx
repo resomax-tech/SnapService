@@ -6,10 +6,12 @@ import LayoutWrapper from "@/components/LayoutWrapper";
 
 export default function CustomerLayout({ children }) {
   return (
-    <LayoutWrapper>
+    <>
       <Header />
-      <main>{children}</main>
+      <main className="flex-1 overflow-y-auto py-16 bg-gray-50">
+        {children}
+        </main>
       <Footer />
-    </LayoutWrapper>
+    </>
   );
 }

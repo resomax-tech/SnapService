@@ -1,18 +1,20 @@
 "use client";
+import { useBooking } from "@/lib/bookingContext";
 
 export default function Step3({ formData, prevStep, handleSubmit }) {
+  const { bookingData, updateBooking } = useBooking();
   return (
     <div className="max-w-lg mx-auto">
       <div className="bg-white p-6 rounded-lg shadow mb-4">
         <h3 className="text-xl font-semibold mb-4 text-center">Confirm Booking</h3>
 
-        <p><b>Name:</b> {formData.firstName} {formData.lastName}</p>
-        <p><b>Phone:</b> {formData.phone}</p>
+        <p><b>Name:</b> {formData.name}</p>
+        <p><b>Phone:</b> {formData.mobile}</p>
         <p><b>Email:</b> {formData.email}</p>
         <p><b>Community:</b> {formData.community}</p>
-        <p><b>Plan:</b> {formData.planId}</p>
-        <p><b>Bathrooms:</b> {formData.bathrooms}</p>
-        <p><b>Total Price:</b> ₹{formData.price}</p>
+        <p><b>Plan:</b> {`${bookingData.plan.type} - ${bookingData.plan.weeks}`}</p>
+        <p><b>Bathrooms:</b> {bookingData.bathrooms}</p>
+        <p><b>Total Price:</b> ₹{bookingData.plan.price}</p>
       </div>
 
       <div className="flex justify-between">
