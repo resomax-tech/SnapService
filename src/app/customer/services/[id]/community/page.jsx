@@ -3,56 +3,87 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import PlanCard from "@/components/PlanCard";
+import axios from "axios";
 
 export default function CommunityPage() {
   const { id: serviceId } = useParams();
-  const [communities] = useState([
-    "Greenwood",
-    "Maplewood",
-    "Sunnyvale",
-    "Brookfield",
-    "Riverside",
-  ]);
-  const [selectedCommunity, setSelectedCommunity] = useState("");
-  const [plans, setPlans] = useState([]);
 
-  const communityPricing = {
-    Greenwood: [
-      { id: "classic-2w", name: "Classic Cleaning", type: "Classic", weeks: "2weeks/Month" },
-      { id: "classic-4w", name: "Classic Cleaning", type: "Classic", weeks: "4weeks/Month" },
-      { id: "deep-2w", name: "Deep Cleaning", type: "Deep", weeks: "2weeks/Month" },
-      { id: "deep-4w", name: "Deep Cleaning", type: "Deep", weeks: "4weeks/Month" },
-    ],
-    Maplewood: [
-      { id: "classic-2w", name: "Classic Cleaning", type: "Classic", weeks: "2weeks/Month" },
-      { id: "classic-4w", name: "Classic Cleaning", type: "Classic", weeks: "4weeks/Month" },
-      { id: "deep-2w", name: "Deep Cleaning", type: "Deep", weeks: "2weeks/Month" },
-      { id: "deep-4w", name: "Deep Cleaning", type: "Deep", weeks: "4weeks/Month" },
-    ],
-    Sunnyvale: [
-      { id: "classic-2w", name: "Classic Cleaning", type: "Classic", weeks: "2weeks/Month" },
-      { id: "classic-4w", name: "Classic Cleaning", type: "Classic", weeks: "4weeks/Month" },
-      { id: "deep-2w", name: "Deep Cleaning", type: "Deep", weeks: "2weeks/Month" },
-      { id: "deep-4w", name: "Deep Cleaning", type: "Deep", weeks: "4weeks/Month" },
-    ],
-    Brookfield: [
-      { id: "classic-2w", name: "Classic Cleaning", type: "Classic", weeks: "2weeks/Month" },
-      { id: "classic-4w", name: "Classic Cleaning", type: "Classic", weeks: "4weeks/Month" },
-      { id: "deep-2w", name: "Deep Cleaning", type: "Deep", weeks: "2weeks/Month" },
-      { id: "deep-4w", name: "Deep Cleaning", type: "Deep", weeks: "4weeks/Month" },
-    ],
-    Riverside: [
-      { id: "classic-2w", name: "Classic Cleaning", type: "Classic", weeks: "2weeks/Month" },
-      { id: "classic-4w", name: "Classic Cleaning", type: "Classic", weeks: "4weeks/Month" },
-      { id: "deep-2w", name: "Deep Cleaning", type: "Deep", weeks: "2weeks/Month" },
-      { id: "deep-4w", name: "Deep Cleaning", type: "Deep", weeks: "4weeks/Month" },
-    ],
+  const [communities, setCommunities] = useState([]);
+  const [selectedCommunity, setSelectedCommunity] = useState("");
+  const [plans, setPlans] = useState({});
+
+  useEffect(() => {
+    const fetchCommunities = async () => {
+      try {
+        const response = await axios.get('/api/community/')
+        setCommunities(response.data.communities)
+      } catch (error) {
+        console.log("error: ", error.message)
+      }
+    }
+    fetchCommunities()
+  }, [])
+
+  // mapping plans 
+  const PLAN_DETAILS = {
+    twoweekclassic: {
+      id: "classic-2w",
+      title: "Classic Cleaning",
+      type: "classic",
+      weeks: "2 Weeks/Month",
+      price: 0
+    },
+    twoweekdeep: {
+      id: "deep-2w",
+      title: "Deep Cleaning",
+      type: "deep",
+      weeks: "2 Weeks/Month",
+      price: 0
+    },
+    fourweekclassic: {
+      id: "classic-4w",
+      title: "Classic Cleaning",
+      type: "classic",
+      weeks: "4 Weeks/Month",
+      price: 0
+    },
+    fourweekdeep: {
+      id: "deep-4w",
+      title: "Deep Cleaning",
+      type: "deep",
+      weeks: "4 Weeks/Month",
+      price: 0
+    },
   };
 
   useEffect(() => {
-    if (selectedCommunity) setPlans(communityPricing[selectedCommunity] || []);
-    else setPlans([]);
+    if (selectedCommunity) {
+      communities.forEach((ele) => {
+        if (ele.name === selectedCommunity) {
+          setPlans(ele.plans)
+        }
+      })
+    }
+    else {
+      setPlans([]);
+    }
+
   }, [selectedCommunity]);
+
+  const handleCommunitySelect = (name) => {
+    const communityObject = communities.find((c) => c.name === name)
+    if (communityObject) {
+      setSelectedCommunity(communityObject);
+      setPlans(communityObject.plans)
+    }
+    else {
+      setSelectedCommunity(null)
+      setPlans({})
+    }
+  }
+
+
+
 
   return (
     <main className="max-w-5xl mx-auto p-6 min-h-screen">
@@ -64,15 +95,15 @@ export default function CommunityPage() {
       <div className="mb-6 w-full max-w-sm relative">
         <select
           value={selectedCommunity}
-          onChange={(e) => setSelectedCommunity(e.target.value)}
+          onChange={(e) => handleCommunitySelect(e.target.value)}
           className="w-full p-3 pr-10 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-100 focus:border-gray-100 appearance-none cursor-pointer"
         >
           <option value="" disabled>
             -- Select your community --
           </option>
           {communities.map((comm) => (
-            <option key={comm} value={comm}>
-              {comm}
+            <option key={comm._id} value={comm.name}>
+              {comm.name}
             </option>
           ))}
         </select>
@@ -92,20 +123,28 @@ export default function CommunityPage() {
       </div>
 
       {/* Plans */}
-      {selectedCommunity && plans.length > 0 && (
+      {selectedCommunity && Object.keys(plans).length > 0 && (
         <div>
           <h2 className="text-xl font-semibold mb-4">
-            Available Plans in {selectedCommunity}
+            Available Plans in {selectedCommunity.name}
           </h2>
           <div className="grid md:grid-cols-4 gap-6">
-            {plans.map((plan) => (
-              <PlanCard
-                key={plan.id}
-                plan={plan}
-                serviceId={serviceId}
-                community={selectedCommunity}
-              />
-            ))}
+            {Object.entries(plans).map(([planName]) => {
+              const baseDetails = PLAN_DETAILS[planName];
+              if (!baseDetails) return null; // skip unknown keys
+
+              const details = { ...baseDetails, price: plans[planName] };
+
+              return (
+                <PlanCard
+                  key={details.id}
+                  plan={details}
+                  serviceId={serviceId}
+                  community={selectedCommunity}
+                />
+              )
+
+            })}
           </div>
         </div>
       )}

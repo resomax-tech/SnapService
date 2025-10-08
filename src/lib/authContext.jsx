@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { useBooking } from "./bookingContext";
-import { useContext, createContext, useState, useEffect } from "react";
+import { useContext, createContext, useState, useEffect, use } from "react";
 
 const AuthContext = createContext();
 
@@ -12,26 +12,48 @@ export function AuthProvider({ children }) {
     const { bookingData, updateBooking } = useBooking();
     const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        const getUser = async () => {
-            try {
-                const response = await axios.get('/api/auth/profile', { withCredentials: true })
-                if (response.data.user) {
-                    setIsLoggedIn(true)
-                    setUser(response.data.user)
-                    updateBooking({ user: response.data.user })
-                }
-            } catch (error) {
-                setUser(null)
-            } finally {
-                setLoading(false)
+    const fetchUser = async () => {
+        try {
+            const response = await axios.get('/api/auth/profile', { withCredentials: true })
+            const user = response.data.user
+            if (user) {
+                setIsLoggedIn(true)
+                setUser(
+                    {
+                        name: user.name,
+                        email: user.email,
+                        mobile: user.mobile,
+                        role: user.role
+                    }
+                )
+                updateBooking({
+                    user: {
+                        name: user.name,
+                        email: user.email,
+                        mobile: user.mobile,
+                    }
+                })
             }
+        } catch (error) {
+            setIsLoggedIn(false)
+            setUser(null)
+        } finally {
+            setLoading(false)
         }
-        getUser()
+    }
+
+    
+    useEffect(() => {
+        fetchUser()
     }, [])
 
+    const refreshUser = async () => {
+        setLoading(true)
+        await fetchUser()
+    }
+
     return (
-        <AuthContext.Provider value={{ user, loading, isLoggedIn, setUser, setIsLoggedIn }}>
+        <AuthContext.Provider value={{ user, loading, isLoggedIn, setUser, setIsLoggedIn, refreshUser }}>
             {children}
         </AuthContext.Provider>
     )

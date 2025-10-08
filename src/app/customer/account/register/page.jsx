@@ -52,7 +52,7 @@ export default function RegisterPage() {
       });
 
       setTimeout(() => {
-        window.location.href = "/customer/account/Login";
+        window.location.href = "/customer/account/login";
       }, 1500);
     } catch (error) {
       setMessage("Failed to register")

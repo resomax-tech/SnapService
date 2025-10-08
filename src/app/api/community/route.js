@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import Community from "@/models/CommunityModel";
-import Worker from "@/models/WorkerModel";
 import dbConnect from "@/lib/connectDB";
 
 
