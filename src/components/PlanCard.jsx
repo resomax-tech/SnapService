@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useBooking } from "@/lib/bookingContext";
 import ViewMoreModal from "./ViewMoreModal";
 
 export default function PlanCard({ plan, serviceId, community }) {
   const [showModal, setShowModal] = useState(false);
   const [bathrooms, setBathrooms] = useState(1);
+  const { bookingData, updateBooking } = useBooking()
 
   const planImages = {
     "classic-2w": "/cleaning7.jpg",
@@ -21,7 +23,7 @@ export default function PlanCard({ plan, serviceId, community }) {
         {/* Image Left */}
         <img
           src={planImages[plan.id] || "/cleaning-placeholder.jpg"}
-          alt={plan.name}
+          alt={plan.title}
           className="w-32 h-32 object-cover rounded-2xl "
         />
 
@@ -29,14 +31,14 @@ export default function PlanCard({ plan, serviceId, community }) {
         <div className="flex-1 flex flex-col items-center ">
           {/* Plan Details */}
           <div>
-            <h2 className="text-lg font-bold ">{plan.name}</h2>
+            <h2 className="text-lg font-bold ">{plan.title}</h2>
             <span className="text-sm font-semibold ">{plan.weeks}</span>
             <div className="flex items-center">
 
               <button
                 onClick={() => setShowModal(true)}
                 className="text-md text-[#092F9C] font-semibold hover:underline "
-              >   
+              >
                 View More
               </button>
 
@@ -62,7 +64,20 @@ export default function PlanCard({ plan, serviceId, community }) {
           </div>
           <div className="flex items-center">
             <Link
-              href={`/customer/services/${serviceId}/booking?community=${community}&plan=${plan.id}&bathrooms=${bathrooms}`}
+              onClick={() => {
+                updateBooking({
+                  community: community,
+                  bathrooms: bathrooms,
+                  plan: {
+                    key: plan.id,
+                    title: plan.title,
+                    type: plan.type,
+                    weeks: plan.weeks,
+                    price: plan.price,
+                  },
+                });
+              }}
+              href={`/customer/services/${serviceId}/booking`}
             >
               <button className="bg-[#2d2c2b] text-white py-2 px-10 rounded-lg font-semibold hover:bg-[#1c1b1b]">
                 Book Now

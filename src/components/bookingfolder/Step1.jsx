@@ -2,20 +2,32 @@
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useBooking } from "@/lib/bookingContext";
 
 export default function Step1({ formData, setFormData, nextStep }) {
   const router = useRouter();
   const [availableDates, setAvailableDates] = useState([])
-
-  useEffect(()=>{
-    const fetchDates = async () => {
-      try {
-        const response = await axios.get('/api/availability',)
-      } catch (error) {
-        console.log("error: ", error.message);        
-      }
+  const {bookingData, updateBooking} = useBooking()
+  
+  console.log(bookingData);
+  
+  const fetchDates = async () => {
+    const params = {
+      community: bookingData.community._id,
+      plan: bookingData.plan.type
     }
-  },[])
+    try {
+      const response = await axios.get('/api/availability', {params})
+      console.log(response.data);
+      setAvailableDates(response.data.availableDates)
+      
+    } catch (error) {
+      console.log("error: ", error.message);
+    }
+  }
+  useEffect(() => {
+    fetchDates()
+  }, [])
 
 
   return (

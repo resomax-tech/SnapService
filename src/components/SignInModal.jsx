@@ -14,7 +14,7 @@ export default function SignInModal({ onClose, redirectTo }) {
       router.push(redirectTo); // Redirect to the booking page
     }
     else{
-      router.push("/customer/account/login")
+      router.push(`/customer/account/login?redirect=${redirectTo}`)
     }
   };
 

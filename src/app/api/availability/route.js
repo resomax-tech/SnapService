@@ -5,23 +5,26 @@ import Job from "@/models/JobModel";
 import dbConnect from "@/lib/connectDB";
 
 export async function GET(req) {
-    try {
-        await dbConnect()
-        const { searchParams } = new URL(req.url);
+  try {
+    await dbConnect()
+    const { searchParams } = new URL(req.url);
 
-        const community = searchParams.get('community')
-        const workType = searchParams.get('plan')
-        
-        const workers = await Worker.find({ community: new mongoose.Types.ObjectId(community), workType });
+    const community = searchParams.get('community')
+    const workType = searchParams.get('plan')
+    console.log(community, workType);
+    
+    const workers = await Worker.find({ community: new mongoose.Types.ObjectId(community), workType });
 
-        const totalSlots = workers.reduce((sum, w) => sum + w.maxJobs, 0);
-        
-        const availableDates = await checkAvailability(totalSlots, community, workType)
+    console.log("workers", workers);
+    
+    const totalSlots = workers.reduce((sum, w) => sum + w.maxJobs, 0);
 
-        return NextResponse.json({ availableDates })
-    } catch (error) {
-        return NextResponse.json({ msg: error.message })
-    }
+    const availableDates = await checkAvailability(totalSlots, community, workType)
+
+    return NextResponse.json({ availableDates })
+  } catch (error) {
+    return NextResponse.json({ msg: error.message })
+  }
 }
 
 const checkAvailability = async (totalSlots, communityId, workType) => {
@@ -52,7 +55,7 @@ const checkAvailability = async (totalSlots, communityId, workType) => {
     },
   ]);
 
-  
+
   // Convert aggregation result into a map { "2025-03-07": 5, "2025-03-08": 10, ... }
   const bookedMap = booked.reduce((acc, b) => {
     acc[b._id] = b.totalBathrooms;

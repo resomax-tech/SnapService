@@ -1,22 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
 
 import StepIndicator from "@/components/bookingfolder/StepIndicator";
 import Step1 from "@/components/bookingfolder/Step1";
 import Step2 from "@/components/bookingfolder/Step2";
 import Step3 from "@/components/bookingfolder/Step3";
+import SignInModal from "./SignInModal";
+import Loader from "./Preloader/Loader";
+import { useAuth } from "@/lib/authContext";
 import { useBooking } from "@/lib/bookingContext";
+import { useParams } from "next/navigation";
 
 
 export default function BookingForm() {
-  const searchParams = useSearchParams();
-  const communityParam = searchParams.get("community") || "";
-  const planParam = searchParams.get("plan") || "";
-  const bathroomsParam = parseInt(searchParams.get("bathrooms")) || 1;
-
+  const { isLoggedIn, user, setUser, loading } = useAuth()
+  const [showModal, setShowModal] = useState(false);
   const [step, setStep] = useState(1);
+  const { id } = useParams();
   const { bookingData, updateBooking } = useBooking();
 
   const [formData, setFormData] = useState({
@@ -28,6 +29,10 @@ export default function BookingForm() {
     message: "",
     community: bookingData.community?.name || ""
   });
+
+  // console.log(bookingData);
+
+
 
   useEffect(() => {
     if (bookingData.user) {
@@ -63,8 +68,15 @@ export default function BookingForm() {
   };
 
   useEffect(() => {
-    console.log("BookingData updated:", bookingData);
+    // console.log("BookingData updated:", bookingData);
   }, [bookingData]);
+
+  if (loading) return <Loader />
+
+  if (!loading && !isLoggedIn) {
+    return <SignInModal redirectTo={`/customer/services/${id}/booking`} onClose={() => setShowModal(false)} />
+  }
+
 
 
   return (
