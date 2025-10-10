@@ -19,7 +19,7 @@ export default function PlanCard({ plan, serviceId, community }) {
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow duration-300 flex flex-row p-4 gap-4 items-center">
+      <div className="bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow duration-300 flex flex-row gap-4 p-3 items-center ">
         {/* Image Left */}
         <img
           src={planImages[plan.id] || "/cleaning-placeholder.jpg"}
@@ -33,7 +33,14 @@ export default function PlanCard({ plan, serviceId, community }) {
           <div>
             <h2 className="text-lg font-bold ">{plan.title}</h2>
             <span className="text-sm font-semibold ">{plan.weeks}</span>
+
+            <p className="text-lg font-bold text-[#2d2c2b] mt-1">
+              ₹{plan.price?.toLocaleString() || 0}
+            </p>
+
             <div className="flex items-center">
+
+
 
               <button
                 onClick={() => setShowModal(true)}

@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
-import StepIndicator from "@/components/bookingfolder/StepIndicator";
 import Step1 from "@/components/bookingfolder/Step1";
 import Step2 from "@/components/bookingfolder/Step2";
 import Step3 from "@/components/bookingfolder/Step3";
@@ -12,11 +10,9 @@ import { useAuth } from "@/lib/authContext";
 import { useBooking } from "@/lib/bookingContext";
 import { useParams } from "next/navigation";
 
-
-export default function BookingForm() {
-  const { isLoggedIn, user, setUser, loading } = useAuth()
+export default function BookingForm({ step, setStep }) {
+  const { isLoggedIn, loading } = useAuth();
   const [showModal, setShowModal] = useState(false);
-  const [step, setStep] = useState(1);
   const { id } = useParams();
   const { bookingData, updateBooking } = useBooking();
 
@@ -30,10 +26,7 @@ export default function BookingForm() {
     community: bookingData.community?.name || ""
   });
 
-  // console.log(bookingData);
-
-
-
+  // Pre-fill user data if available
   useEffect(() => {
     if (bookingData.user) {
       setFormData((prev) => ({
@@ -41,14 +34,12 @@ export default function BookingForm() {
         name: bookingData.user.name || "",
         mobile: bookingData.user.mobile || "",
         email: bookingData.user.email || ""
-
-      }))
+      }));
     }
   }, [bookingData.user]);
 
-
-  const nextStep = () => setStep((s) => s + 1);
-  const prevStep = () => setStep((s) => s - 1);
+  const nextStep = () => setStep(step + 1);
+  const prevStep = () => setStep(step - 1);
 
   const handleSubmit = () => {
     console.log("Form Confirmed:", formData);
@@ -63,7 +54,7 @@ export default function BookingForm() {
         email: formData.email,
         mobile: formData.mobile,
       },
-    })
+    });
     // alert("Booking Confirmed!");
   };
 
@@ -71,18 +62,19 @@ export default function BookingForm() {
     console.log("BookingData updated:", bookingData);
   }, [bookingData]);
 
-  if (loading) return <Loader />
+  if (loading) return <Loader />;
 
   if (!loading && !isLoggedIn) {
-    return <SignInModal redirectTo={`/customer/services/${id}/booking`} onClose={() => setShowModal(false)} />
+    return (
+      <SignInModal
+        redirectTo={`/customer/services/${id}/booking`}
+        onClose={() => setShowModal(false)}
+      />
+    );
   }
-
-
 
   return (
     <div>
-      <StepIndicator step={step} />
-
       {step === 1 && (
         <Step1 formData={formData} setFormData={setFormData} nextStep={nextStep} />
       )}
@@ -104,7 +96,3 @@ export default function BookingForm() {
     </div>
   );
 }
-
-
-
-

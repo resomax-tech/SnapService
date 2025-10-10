@@ -32,7 +32,7 @@ export default function Step1({ formData, setFormData, nextStep }) {
 
   return (
     <div>
-      <div className="bg-white p-4 rounded-lg shadow">
+      <div className="bg-gray-50 p-4 rounded-lg shadow">
         <h3 className="font-semibold mb-2">Booking Date</h3>
         <input
           type="date"

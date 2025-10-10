@@ -150,7 +150,7 @@ export default function CommunitiesPage() {
 
       {/* Community Modal */}
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="fixed inset-0 flex items-center justify-center  bg-black/50 z-50">
           <div className="bg-white rounded-xl p-6 w-11/12 max-w-4xl shadow-lg">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">
