@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import axios from "axios";
 import { Edit, Trash2, Plus, Building2 } from "lucide-react";
 
 export default function CommunitiesPage() {
@@ -13,19 +14,17 @@ export default function CommunitiesPage() {
   });
   const [searchCommunity, setSearchCommunity] = useState("");
 
+  const fetchCommunities = async () => {
+    try {
+      const response = await axios.get('/api/community')
+      setCommunities(response.data.communities)
+    } catch (error) {
+      console.log("error while fetching communities");
+    }
+  }
+
   useEffect(() => {
-    setCommunities([
-      {
-        id: 1,
-        name: "Green Valley",
-        plans: { twoweekclassic: 1000, twoweekdeep: 1500, fourweekclassic: 2000, fourweekdeep: 2500 },
-      },
-      {
-        id: 2,
-        name: "Blue Hills",
-        plans: { twoweekclassic: 800, twoweekdeep: 1200, fourweekclassic: 1600, fourweekdeep: 2200 },
-      },
-    ]);
+    fetchCommunities()
   }, []);
 
   const handleCommunityChange = (e) => {
@@ -40,32 +39,34 @@ export default function CommunitiesPage() {
     }
   };
 
-  const handleCommunitySubmit = (e) => {
+  const handleCommunitySubmit = async (e) => {
     e.preventDefault();
     if (editingCommunity) {
-      setCommunities((prev) =>
-        prev.map((c) => (c.id === editingCommunity.id ? { ...editingCommunity, ...community } : c))
-      );
+      await axios.patch(`/api/community/${editingCommunity._id}`, community)
     } else {
-      setCommunities((prev) => [...prev, { id: Date.now(), ...community }]);
+      await axios.post("/api/community", community);
     }
-    setCommunity({
-      name: "",
-      plans: { twoweekclassic: "", twoweekdeep: "", fourweekclassic: "", fourweekdeep: "" },
-    });
-    setEditingCommunity(null);
+    await fetchCommunities()
     setShowModal(false);
   };
 
   const handleCommunityEdit = (c) => {
     setEditingCommunity(c);
-    setCommunity(c);
-    setShowModal(true);
+    setCommunity({
+      name: c.name,
+      plans: {
+        twoweekclassic: c.plans?.twoweekclassic || "",
+        twoweekdeep: c.plans?.twoweekdeep || "",
+        fourweekclassic: c.plans?.fourweekclassic || "",
+        fourweekdeep: c.plans?.fourweekdeep || "",
+      },
+    }); setShowModal(true);
   };
 
-  const handleCommunityDelete = (id) => {
+  const handleCommunityDelete = async (id) => {
     if (confirm("Are you sure you want to delete this community?")) {
-      setCommunities((prev) => prev.filter((c) => c.id !== id));
+      await axios.delete(`/api/community/${id}`)
+      await fetchCommunities()
     }
   };
 
@@ -77,8 +78,7 @@ export default function CommunitiesPage() {
     <main className="flex-1 p-6 overflow-y-auto">
       <div className="bg-white p-6 rounded-xl shadow">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Building2 size={18} />
+          <h2 className="text-3xl font-bold text-gray-700 flex items-center gap-2">
             Communities
           </h2>
           <button
@@ -119,12 +119,12 @@ export default function CommunitiesPage() {
             </thead>
             <tbody>
               {filteredCommunities.map((c, idx) => (
-                <tr key={c.id} className={idx % 2 === 0 ? "" : "bg-gray-50"}>
+                <tr key={c._id} className={idx % 2 === 0 ? "" : "bg-gray-50"}>
                   <td className="p-2">{c.name}</td>
-                  <td className="p-2">Rs.{c.plans.twoweekclassic}</td>
-                  <td className="p-2">Rs.{c.plans.twoweekdeep}</td>
-                  <td className="p-2">Rs.{c.plans.fourweekclassic}</td>
-                  <td className="p-2">Rs.{c.plans.fourweekdeep}</td>
+                  <td className="p-2">Rs.{c.plans?.twoweekclassic || "NA"}</td>
+                  <td className="p-2">Rs.{c.plans?.twoweekdeep || "NA"}</td>
+                  <td className="p-2">Rs.{c.plans?.fourweekclassic || "NA"}</td>
+                  <td className="p-2">Rs.{c.plans?.fourweekdeep || "NA"}</td>
                   <td className="p-2 flex gap-2">
                     <button
                       onClick={() => handleCommunityEdit(c)}
@@ -133,7 +133,7 @@ export default function CommunitiesPage() {
                       <Edit size={16} />
                     </button>
                     <button
-                      onClick={() => handleCommunityDelete(c.id)}
+                      onClick={() => handleCommunityDelete(c._id)}
                       className="text-white p-2 rounded-md bg-[#e11c48]"
                     >
                       <Trash2 size={16} />

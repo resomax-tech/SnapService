@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Edit, Trash2, Plus, UserCog } from "lucide-react";
+import axios from "axios";
+import { Edit, Trash2, Plus } from "lucide-react";
 
 export default function WorkersPage() {
   const [workers, setWorkers] = useState([]);
@@ -11,37 +12,34 @@ export default function WorkersPage() {
   const [worker, setWorker] = useState({
     name: "",
     mobile: "",
-    communityId: "",
+    community: "",
     workType: "classic",
     maxJobs: 5,
   });
   const [searchWorker, setSearchWorker] = useState("");
 
-  /** Mock Data Load */
-  useEffect(() => {
-    setCommunities([
-      { id: 1, name: "Green Valley" },
-      { id: 2, name: "Blue Hills" },
-    ]);
+  const fetchCommunities = async () => {
+    try {
+      const response = await axios.get('/api/community')
+      setCommunities(response.data.communities)
+    } catch (error) {
+      console.log("error while fetching communities");
+      console.log(error);
+    }
+  }
 
-    setWorkers([
-      {
-        id: 1,
-        name: "John Doe",
-        mobile: "9876543210",
-        communityId: 1,
-        workType: "classic",
-        maxJobs: 5,
-      },
-      {
-        id: 2,
-        name: "Jane Smith",
-        mobile: "9123456780",
-        communityId: 2,
-        workType: "deep",
-        maxJobs: 7,
-      },
-    ]);
+  const fetchWorkers = async () => {
+    try {
+      const response = await axios.get('/api/worker')
+      setWorkers(response.data.workers)
+    } catch (error) {
+      console.log("error while fetching communities");
+    }
+  }
+
+  useEffect(() => {
+    fetchCommunities()
+    fetchWorkers()
   }, []);
 
   /** Worker Handlers */
@@ -50,29 +48,36 @@ export default function WorkersPage() {
     setWorker((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleWorkerSubmit = (e) => {
+  const handleWorkerSubmit = async (e) => {
     e.preventDefault();
     if (editingWorker) {
-      setWorkers((prev) =>
-        prev.map((w) => (w.id === editingWorker.id ? { ...editingWorker, ...worker } : w))
-      );
+      console.log(editingWorker._id);
+      await axios.patch(`/api/worker/${editingWorker._id}`, worker)
     } else {
-      setWorkers((prev) => [...prev, { id: Date.now(), ...worker }]);
+      await axios.post(`/api/worker`, worker)
     }
-    setWorker({ name: "", mobile: "", communityId: "", workType: "classic", maxJobs: 5 });
-    setEditingWorker(null);
+    await fetchWorkers()
+    
     setShowWorkerModal(false);
   };
 
   const handleWorkerEdit = (w) => {
     setEditingWorker(w);
-    setWorker(w);
+
+    setWorker({
+      name: w.name,
+      mobile: w?.mobile || "",
+      community: w.community || "",
+      workType: w?.workType || "",
+      maxJobs: w?.maxJobs || ""
+    });
     setShowWorkerModal(true);
   };
 
-  const handleWorkerDelete = (id) => {
+  const handleWorkerDelete = async (id) => {
     if (confirm("Are you sure you want to delete this worker?")) {
-      setWorkers((prev) => prev.filter((w) => w.id !== id));
+      await axios.delete(`/api/worker/${id}`)
+      fetchWorkers()
     }
   };
 
@@ -82,14 +87,13 @@ export default function WorkersPage() {
       w.mobile.includes(searchWorker)
   );
 
-  const getCommunityName = (id) => communities.find((c) => c.id === Number(id))?.name || "";
+  const getCommunityName = (id) => communities.find((c) => c._id === id)?.name || "";
 
   return (
     <main className="flex-1 p-6 overflow-y-auto">
       <div className="bg-white p-6 rounded-xl shadow">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <UserCog size={18} />
+          <h2 className="text-3xl font-bold text-gray-700 flex items-center gap-2">
             Workers
           </h2>
           <button
@@ -127,10 +131,10 @@ export default function WorkersPage() {
             </thead>
             <tbody>
               {filteredWorkers.map((w, idx) => (
-                <tr key={w.id} className={idx % 2 === 0 ? "" : "bg-gray-50"}>
+                <tr key={w._id} className={idx % 2 === 0 ? "" : "bg-gray-50"}>
                   <td className="p-2">{w.name}</td>
                   <td className="p-2">{w.mobile}</td>
-                  <td className="p-2">{getCommunityName(w.communityId)}</td>
+                  <td className="p-2">{getCommunityName(w.community)}</td>
                   <td className="p-2 capitalize">{w.workType}</td>
                   <td className="p-2">{w.maxJobs}</td>
                   <td className="p-2 flex gap-2">
@@ -141,7 +145,7 @@ export default function WorkersPage() {
                       <Edit size={16} />
                     </button>
                     <button
-                      onClick={() => handleWorkerDelete(w.id)}
+                      onClick={() => handleWorkerDelete(w._id)}
                       className="text-white bg-[#e11c48] p-2 rounded-md"
                     >
                       <Trash2 size={16} />
@@ -200,15 +204,15 @@ export default function WorkersPage() {
               <div>
                 <label className="block text-sm font-medium">Community</label>
                 <select
-                  name="communityId"
-                  value={worker.communityId}
+                  name="community"
+                  value={worker.community}
                   onChange={handleWorkerChange}
                   className="w-full border rounded-md p-2"
                   required
                 >
                   <option value="">Select community</option>
                   {communities.map((c) => (
-                    <option key={c.id} value={c.id}>
+                    <option key={c._id} value={c._id}>
                       {c.name}
                     </option>
                   ))}
