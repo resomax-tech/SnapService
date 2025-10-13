@@ -25,6 +25,11 @@ export default function CommunitiesPage() {
         name: "Blue Hills",
         plans: { twoweekclassic: 800, twoweekdeep: 1200, fourweekclassic: 1600, fourweekdeep: 2200 },
       },
+      {
+        id: 3,
+        name: "My Home",
+        plans: { twoweekclassic: 800, twoweekdeep: 1400, fourweekclassic: 1600, fourweekdeep: 3200 },
+      }
     ]);
   }, []);
 
