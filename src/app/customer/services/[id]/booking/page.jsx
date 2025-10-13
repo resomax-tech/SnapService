@@ -1,51 +1,46 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+
 import BookingForm from "@/components/BookingForm";
+import StepIndicator from "@/components/bookingfolder/StepIndicator";
 
 export default function BookingPage() {
   const searchParams = useSearchParams();
   const community = searchParams.get("community") || "Not Selected";
-  const plan = searchParams.get("plan") || "No Plan";
+  const plan = searchParams.get("plan") || "bathroom-cleaning";
   const bathrooms = searchParams.get("bathrooms") || "1";
 
-  // Plan Name Formatting
-  const formattedPlan =
-    plan.includes("classic") ? "Classic Cleaning" :
-    plan.includes("deep") ? "Deep Cleaning" :
-    plan;
+  const [step, setStep] = useState(1); // Step state lifted here
+
+  // Map plan IDs to display names
+  const planName =
+    plan.includes("bathroom") ? "Bathroom Cleaning Service" :
+    plan.includes("classic") ? "Classic Cleaning Service" :
+    plan.includes("deep") ? "Deep Cleaning Service" :
+    "Cleaning Service";
+
+  const price = "Rs. 900 Per Month"; // temporary until backend
+  const taxInfo = "Exclusive of all taxes";
 
   return (
-    <main className="max-w-3xl mx-auto p-6 min-h-screen bg-gray-50">
-      {/* Cart Section */}
-      <div className="bg-white p-6 rounded-xl shadow-md mb-6 border border-gray-200">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">
-          Review Your Booking
-        </h1>
+    <main className="max-w-md mx-auto px-4 py-6 min-h-screen bg-white">
+      {/* Heading */}
+      <h1 className="text-2xl font-bold text-gray-900 mb-4">Review Your Booking</h1>
 
-        {/* Cart Details */}
-        <div className="space-y-3">
-          <div className="flex justify-between">
-            <span className="font-semibold text-gray-600">Community:</span>
-            <span className="text-gray-800">{community}</span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="font-semibold text-gray-600">Selected Plan:</span>
-            <span className="text-gray-800">{formattedPlan}</span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="font-semibold text-gray-600">No. of Bathrooms:</span>
-            <span className="text-gray-800">{bathrooms}</span>
-          </div>
-        </div>
+      {/* Cart Summary */}
+      <div className="bg-gray-50 p-4 rounded-xl shadow border border-gray-200  mb-6">
+        <h2 className="text-lg font-bold text-gray-800 mb-2">{planName}</h2>
+        <p className="text-xl font-semibold text-gray-900">{price}</p>
+        <p className="text-sm text-green-600 mt-1">{taxInfo}</p>
       </div>
+
+      {/* Step Indicator */}
+      <StepIndicator step={step} className="mb-6 ml-30" />
 
       {/* Booking Form */}
-      <div className="bg-white p-6 rounded-xl shadow-md">
-        <BookingForm />
-      </div>
+      <BookingForm step={step} setStep={setStep} />
     </main>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+
 import PlanCard from "@/components/PlanCard";
 import axios from "axios";
 
@@ -20,7 +21,6 @@ export default function CommunityPage() {
         
         setCommunities(response.data.communities)
       } catch (error) {
-        console.log("Error fetching communities:", error.message);
       }
     };
     fetchCommunities();
@@ -118,7 +118,7 @@ export default function CommunityPage() {
           <h2 className="text-xl font-semibold mb-4">
             Available Plans in {selectedCommunity.name}
           </h2>
-          <div className="grid md:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-3  gap-2">
             {Object.entries(plans).map(([planName]) => {
               const baseDetails = PLAN_DETAILS[planName];
               if (!baseDetails) return null;

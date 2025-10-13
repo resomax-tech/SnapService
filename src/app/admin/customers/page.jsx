@@ -159,7 +159,7 @@ export default function CustomersPage() {
 
       {/* Customer Modal */}
       {showCustomerModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
           <div className="bg-white rounded-xl p-6 w-11/12 max-w-4xl shadow-lg">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">
@@ -170,8 +170,9 @@ export default function CustomersPage() {
               </button>
             </div>
 
-            <form onSubmit={handleCustomerSubmit} className="space-y-4">
-              <div>
+            <form onSubmit={handleCustomerSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+
                 <label className="block text-sm font-medium">Name</label>
                 <input
                   type="text"
@@ -220,7 +221,7 @@ export default function CustomersPage() {
                   className="w-full border rounded-md p-2"
                   required
                 >
-                  <option value="">Select community</option>
+                  <option value="" >Select community</option>
                   {communities.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
@@ -241,13 +242,14 @@ export default function CustomersPage() {
                   required
                 />
               </div>
-
-              <button
-                type="submit"
-                className="bg-[#6e8cfb] text-white px-4 py-2 rounded-md w-full hover:bg-gray-500"
-              >
-                {editingCustomer ? "Update Customer" : "Create Customer"}
-              </button>
+              <div className="md:col-span-2">
+                <button
+                  type="submit"
+                  className="bg-[#6e8cfb] text-white px-4 py-2 rounded-md  hover:bg-gray-500 w-full"
+                >
+                  {editingCustomer ? "Update Customer" : "Create Customer"}
+                </button>
+              </div>
             </form>
           </div>
         </div>

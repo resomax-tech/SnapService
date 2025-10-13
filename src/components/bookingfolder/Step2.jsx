@@ -35,7 +35,7 @@ export default function Step2({ formData, setFormData, nextStep, prevStep }) {
  
   return (
     <div>
-      <div className="bg-white p-6 rounded-lg shadow space-y-4">
+      <div className="bg-gray-50 p-6 rounded-lg shadow space-y-4">
         <h3 className="font-semibold text-lg mb-2">Booking Information</h3>
  
         {/* Name */}
