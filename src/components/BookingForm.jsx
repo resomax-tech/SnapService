@@ -1,6 +1,4 @@
 "use client";
-
-import { useState, useEffect } from "react";
 import Step1 from "@/components/bookingfolder/Step1";
 import Step2 from "@/components/bookingfolder/Step2";
 import Step3 from "@/components/bookingfolder/Step3";
@@ -12,87 +10,23 @@ import { useParams } from "next/navigation";
 
 export default function BookingForm({ step, setStep }) {
   const { isLoggedIn, loading } = useAuth();
-  const [showModal, setShowModal] = useState(false);
   const { id } = useParams();
   const { bookingData, updateBooking } = useBooking();
 
-  const [formData, setFormData] = useState({
-    date: "",
-    name: "",
-    email: "",
-    mobile: "",
-    flat: "",
-    message: "",
-    community: bookingData.community?.name || ""
-  });
-
-  // Pre-fill user data if available
-  useEffect(() => {
-    if (bookingData.user) {
-      setFormData((prev) => ({
-        ...prev,
-        name: bookingData.user.name || "",
-        mobile: bookingData.user.mobile || "",
-        email: bookingData.user.email || ""
-      }));
-    }
-  }, [bookingData.user]);
-
-  const nextStep = () => setStep(step + 1);
-  const prevStep = () => setStep(step - 1);
-
-  const handleSubmit = () => {
-    console.log("Form Confirmed:", formData);
-
-    updateBooking({
-      ...bookingData,
-      date: formData.date,
-      address: formData.flat,
-      message: formData.message,
-      user: {
-        name: formData.name,
-        email: formData.email,
-        mobile: formData.mobile,
-      },
-    });
-    // alert("Booking Confirmed!");
-  };
-
-  useEffect(() => {
-    console.log("BookingData updated:", bookingData);
-  }, [bookingData]);
+  const nextStep = () => setStep((s) => s + 1);
+  const prevStep = () => setStep((s) => s - 1);
 
   if (loading) return <Loader />;
 
-  if (!loading && !isLoggedIn) {
-    return (
-      <SignInModal
-        redirectTo={`/customer/services/${id}/booking`}
-        onClose={() => setShowModal(false)}
-      />
-    );
+  if (!isLoggedIn) {
+    return <SignInModal redirectTo={`/customer/services/${id}/community`} />;
   }
 
   return (
     <div>
-      {step === 1 && (
-        <Step1 formData={formData} setFormData={setFormData} nextStep={nextStep} />
-      )}
-      {step === 2 && (
-        <Step2
-          formData={formData}
-          setFormData={setFormData}
-          nextStep={nextStep}
-          prevStep={prevStep}
-        />
-      )}
-      {step === 3 && (
-        <Step3
-          formData={formData}
-          prevStep={prevStep}
-          handleSubmit={handleSubmit}
-        />
-      )}
+      {step === 1 && <Step1 nextStep={nextStep} />}
+      {step === 2 && <Step2 nextStep={nextStep} prevStep={prevStep} />}
+      {step === 3 && <Step3 prevStep={prevStep} />}
     </div>
   );
 }

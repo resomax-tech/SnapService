@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Edit, Trash2, Plus } from "lucide-react";
-import axios from "axios";
-import { Edit, Trash2, Plus } from "lucide-react";
+
 
 export default function WorkersPage() {
   const [workers, setWorkers] = useState([]);
@@ -34,35 +33,14 @@ export default function WorkersPage() {
   const fetchWorkers = async () => {
     try {
       const response = await axios.get('/api/worker')
-      setWorkers(response.data.workers)
-    } catch (error) {
-      console.log("error while fetching communities");
-    }
-  }
-
-  const fetchCommunities = async () => {
-    try {
-      const response = await axios.get('/api/community')
-      setCommunities(response.data.communities)
-    } catch (error) {
-      console.log("error while fetching communities");
-      console.log(error);
-    }
-  }
-
-  const fetchWorkers = async () => {
-    try {
-      const response = await axios.get('/api/worker')
       setWorkers(response.data.workers || []);
     } catch (error) {
       console.log("error while fetching communities");
-      setWoekers([]);
+      setWorkers([]);
     }
   }
 
   useEffect(() => {
-    fetchCommunities()
-    fetchWorkers()
     fetchCommunities()
     fetchWorkers()
   }, []);
@@ -74,20 +52,14 @@ export default function WorkersPage() {
   };
 
   const handleWorkerSubmit = async (e) => {
-  const handleWorkerSubmit = async (e) => {
     e.preventDefault();
     if (editingWorker) {
-      console.log(editingWorker._id);
-      await axios.patch(`/api/worker/${editingWorker._id}`, worker)
-      console.log(editingWorker._id);
       await axios.patch(`/api/worker/${editingWorker._id}`, worker)
     } else {
       await axios.post(`/api/worker`, worker)
-      await axios.post(`/api/worker`, worker)
     }
     await fetchWorkers()
-    
-    await fetchWorkers()
+
 
     setShowWorkerModal(false);
   };
@@ -103,21 +75,11 @@ export default function WorkersPage() {
       maxJobs: w?.maxJobs || ""
     });
 
-    setWorker({
-      name: w.name,
-      mobile: w?.mobile || "",
-      community: w.community || "",
-      workType: w?.workType || "",
-      maxJobs: w?.maxJobs || ""
-    });
     setShowWorkerModal(true);
   };
 
   const handleWorkerDelete = async (id) => {
-  const handleWorkerDelete = async (id) => {
     if (confirm("Are you sure you want to delete this worker?")) {
-      await axios.delete(`/api/worker/${id}`)
-      fetchWorkers()
       await axios.delete(`/api/worker/${id}`)
       fetchWorkers()
     }
@@ -130,13 +92,11 @@ export default function WorkersPage() {
   );
 
   const getCommunityName = (id) => communities.find((c) => c._id === id)?.name || "";
-  const getCommunityName = (id) => communities.find((c) => c._id === id)?.name || "";
 
   return (
     <main className="flex-1 p-6 overflow-y-auto">
       <div className="bg-white p-6 rounded-xl shadow">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-3xl font-bold text-gray-700 flex items-center gap-2">
           <h2 className="text-3xl font-bold text-gray-700 flex items-center gap-2">
             Workers
           </h2>
@@ -165,6 +125,7 @@ export default function WorkersPage() {
           <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
             <thead className="bg-gray-100 text-gray-700">
               <tr>
+                <th className="p-2 text-left">S.No</th>
                 <th className="p-2 text-left">Name</th>
                 <th className="p-2 text-left">Mobile</th>
                 <th className="p-2 text-left">Community</th>
@@ -175,10 +136,10 @@ export default function WorkersPage() {
             </thead>
             <tbody>
               {filteredWorkers.map((w, idx) => (
-                <tr key={w.__id} className={idx % 2 === 0 ? "" : "bg-gray-50"}>
+                <tr key={w._id} className={idx % 2 === 0 ? "" : "bg-gray-50"}>
+                  <td className="p-2">{idx+1}</td>
                   <td className="p-2">{w.name}</td>
                   <td className="p-2">{w.mobile}</td>
-                  <td className="p-2">{getCommunityName(w.community)}</td>
                   <td className="p-2">{getCommunityName(w.community)}</td>
                   <td className="p-2 capitalize">{w.workType}</td>
                   <td className="p-2">{w.maxJobs}</td>
@@ -254,8 +215,6 @@ export default function WorkersPage() {
               <div>
                 <label className="block text-sm font-medium">Community</label>
                 <select
-                  name="community"
-                  value={worker.community}
                   name="community"
                   value={worker.community}
                   onChange={handleWorkerChange}

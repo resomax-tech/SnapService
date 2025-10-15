@@ -1,56 +1,54 @@
- 
 @import "tailwindcss";
- 
- 
- 
+@import "react-day-picker/dist/style.css";
+
 :root {
   --background: #dba144;
-  --foreground:#1a1515;
+  --foreground: #1a1515;
 }
- 
-.yellow{
+
+.yellow {
   background-color: var(--background);
 }
-.text-color{
+.text-color {
   color: var(--background);
 }
- 
-body{
-  color:var(--foreground);
+
+body {
+  color: var(--foreground);
 }
 
-button{
+button {
   cursor: pointer !important;
 }
 
-select{
+select {
   cursor: pointer !important;
 }
 
-
-.btn{
-  cursor:pointer;
-  transition: all .3s ease-in-out;
+.btn {
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
 }
-.btn:hover{
+.btn:hover {
   transform: scale(1.15);
 }
- 
-input,textarea{
+
+input,
+textarea {
   outline: none;
   border: 1px solid #e2e2e2;
-  transition: all .2s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
- 
-input:focus{
+
+input:focus {
   border: none;
   border: 1px solid #dba144;
 }
-textarea:focus{
+textarea:focus {
   border: none;
   border: 1px solid #dba144;
 }
- 
+
 @keyframes fade-in-down {
   from {
     opacity: 0;
@@ -77,8 +75,86 @@ textarea:focus{
   animation: slideUp 0.4s ease-out forwards;
 }
 
- 
- 
- 
- 
- 
+
+/* === React DayPicker Custom Styles (v9+) === */
+.custom-calendar {
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
+
+/* Caption (month/year header) */
+.custom-calendar .rdp-month_caption {
+  text-align: center;
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 0.5rem;
+}
+.custom-calendar .rdp-caption_label {
+  font-size: 1rem;
+}
+
+/* Navigation arrows */
+.custom-calendar .rdp-button_previous,
+.custom-calendar .rdp-button_next {
+  color: #dba144 !important;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+.custom-calendar .rdp-button_previous:hover,
+.custom-calendar .rdp-button_next:hover {
+  background-color: rgba(219, 161, 68, 0.15);
+}
+
+/* Weekday header */
+.custom-calendar .rdp-weekday {
+  font-weight: 500;
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+
+/* Day cells */
+.custom-calendar .rdp-day {
+  font-size: 0.9rem;
+  color: #111827;
+  border: 1px solid #e2e2e2;
+  border-radius: 12px;
+}
+
+/* Hover state */
+.custom-calendar .rdp-day:hover:not([disabled]) button {
+  background-color: rgba(219, 161, 68, 0.1);
+  border-radius: 12px;
+}
+
+/* Selected day */
+.custom-calendar .rdp-selected button {
+  background-color: #dba144 !important;
+  color: white !important;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+}
+
+/* Today highlight */
+.custom-calendar .rdp-today:not(.rdp-selected) button {
+  border: 1px solid #dba144 !important;
+  color: #dba144 !important;
+  background-color: transparent !important;
+  border-radius: 12px;
+}
+
+/* Disabled days (like Sundays or fully booked) */
+.custom-calendar .rdp-disabled button {
+  color: #d1d5db !important;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+.custom-calendar .rdp-chevron{
+  fill: #dba144;
+}

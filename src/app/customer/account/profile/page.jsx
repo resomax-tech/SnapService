@@ -13,15 +13,16 @@ import { useAuth } from "@/lib/authContext";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, loading, setUser, setIsLoggedIn } = useAuth()
-  const { updateBooking } = useBooking()
+  const { user, loading } = useAuth()
+  const { resetBooking } = useBooking()
 
   const logout = async () => {
     try {
-      const response = await axios.post('/api/auth/logout', {}, { withCredentials: true })
-      setUser(null)
+      await axios.post('/api/auth/logout', {}, { withCredentials: true })
+      localStorage.clear()
+      resetBooking()
       setIsLoggedIn(false)
-      updateBooking({ user: null })
+      setUser(null)
       router.push("/")
     } catch (error) {
       console.log("Error", error.message);

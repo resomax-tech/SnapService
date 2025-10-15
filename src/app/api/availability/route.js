@@ -4,6 +4,13 @@ import mongoose from "mongoose";
 import Job from "@/models/JobModel";
 import dbConnect from "@/lib/connectDB";
 
+
+const getDaysWindow = (weeks) => {
+  if (weeks?.includes("4W")) return 45;  // cover 4-week plan safely
+  if (weeks?.includes("2W")) return 30;  // cover 2-week plan safely
+  return 30; // default fallback
+};
+
 export async function GET(req) {
   try {
     await dbConnect()
@@ -11,6 +18,9 @@ export async function GET(req) {
 
     const community = searchParams.get('community')
     const workType = searchParams.get('plan')
+    const weeks = searchParams.get('weeks')
+    const startDate = searchParams.get('startDate')
+
 
     if (!community || !mongoose.Types.ObjectId.isValid(community)) {
       return NextResponse.json({ msg: "Invalid or missing community ID" }, { status: 400 });
@@ -24,7 +34,7 @@ export async function GET(req) {
       return NextResponse.json({ availableDates: {}, msg: "No workers found for this community and plan" });
     }
 
-    const availableDates = await checkAvailability(totalSlots, community, workType)
+    const availableDates = await checkAvailability(startDate, totalSlots, community, workType, weeks)
 
     const formatted = Object.entries(availableDates).map(([date, info]) => ({
       date,
@@ -35,18 +45,20 @@ export async function GET(req) {
 
     return NextResponse.json({ formatted })
   } catch (error) {
+    console.log(error);
+
     return NextResponse.json({ msg: error.message }, { status: 500 });
   }
 }
 
-const checkAvailability = async (totalSlots, communityId, workType) => {
+const checkAvailability = async (startDate, totalSlots, communityId, workType, weeks) => {
   const availability = {};
 
-  const today = new Date();
+  const today = startDate ? new Date(startDate) : new Date();
   today.setUTCHours(0, 0, 0, 0);
 
   const endDate = new Date(today);
-  endDate.setUTCDate(today.getUTCDate() + 30);
+  endDate.setUTCDate(today.getUTCDate() + getDaysWindow(weeks));
 
 
   // 🔹 Single aggregation for all 30 days
@@ -76,7 +88,7 @@ const checkAvailability = async (totalSlots, communityId, workType) => {
   }, {});
 
   // Build availability for each of the next 30 days
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < getDaysWindow(weeks); i++) {
     const date = new Date(today);
     date.setUTCDate(today.getUTCDate() + i);
 

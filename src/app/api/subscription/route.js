@@ -44,26 +44,17 @@ export async function GET(req) {
 }
 
 const generateDates = (startDate, plan) => {
+    const date = startDate
     const recurringDates = []
-    let add = 0
-    let n = 0
+    const gap = plan.includes("4w") ? 7 : 14
+    const occurences = plan.includes("4w") ? 4 : 2
 
-    if (plan.includes("4W")) {
-        add = 7
-        n = 3
-    }
-    else {
-        add = 14
-        n = 1
+    for (let i = 0; i < occurences; i++) {
+        const d = new Date(date)
+        d.setDate(d.getDate() + i * gap)
+        recurringDates.push(d)
     }
 
-    const date = new Date(startDate)
-    recurringDates.push(date.toISOString().split("T")[0]);
-
-    for (let i = 0; i < n; i++) {
-        date.setDate(date.getDate() + add)
-        recurringDates.push(date.toISOString().split("T")[0])
-    }
 
     return recurringDates
 }
