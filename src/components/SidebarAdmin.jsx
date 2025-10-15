@@ -33,10 +33,10 @@ export default function Sidebar() {
       </nav>
 
       {/* Logout Button */}
-      <div className="p-4 mb-10 flex items-center">
+      <div className="py-4 px-6 mb-10 flex items-center">
         <button
           onClick={() => alert("Logging out...")}
-          className="flex items-center gap-2 p-2 w-full rounded-md bg-[#ED3F27] text-white font-medium"
+          className="flex items-center justify-center gap-2 p-2 w-full rounded-md bg-[#ED3F27] text-white font-medium"
         >
           <LogOut size={18} />
           Logout

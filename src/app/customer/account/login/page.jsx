@@ -30,8 +30,7 @@ export default function LoginPage() {
       const data = response.data
 
       setMessage(data.msg || data.error)
-      console.log(data.msg);
-      
+     
       await refreshUser()
       setTimeout(() => {
         router.push(redirectURL)

@@ -11,10 +11,10 @@ export default function PlanCard({ plan, serviceId, community }) {
   const { bookingData, updateBooking } = useBooking()
 
   const planImages = {
-    "classic-2w": "/cleaning7.jpg",
-    "classic-4w": "/cleaning6.png",
-    "deep-2w": "/cleaning5.jpg",
-    "deep-4w": "/cleaning4.jpg",
+    "2W_CLASSIC": "/cleaning7.jpg",
+    "4W_CLASSIC": "/cleaning6.png",
+    "2W_DEEP": "/cleaning5.jpg",
+    "4W_DEEP": "/cleaning4.jpg",
   };
 
   return (

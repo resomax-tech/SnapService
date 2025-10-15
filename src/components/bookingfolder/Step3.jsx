@@ -1,7 +1,7 @@
 "use client";
 import { useBooking } from "@/lib/bookingContext";
 
-export default function Step3({ formData, prevStep, handleSubmit }) {
+export default function Step3({ prevStep, handleSubmit }) {
   const { bookingData } = useBooking();
 
   return (
@@ -9,15 +9,16 @@ export default function Step3({ formData, prevStep, handleSubmit }) {
       <div className="bg-gray-50 p-6 rounded-lg shadow mb-4">
         <h3 className="text-xl font-semibold mb-4 text-center">Confirm Booking</h3>
 
-        <p><b>Name:</b> {formData.name || "-"}</p>
-        <p><b>Phone:</b> {formData.mobile || "-"}</p>
-        <p><b>Email:</b> {formData.email || "-"}</p>
-        <p><b>Community:</b> {formData.community || "-"}</p>
+        <p><b>Name:</b> {bookingData.user?.name || "-"}</p>
+        <p><b>Phone:</b> {bookingData.user?.mobile || "-"}</p>
+        <p><b>Email:</b> {bookingData.user?.email || "-"}</p>
+
+        <p><b>Community:</b> {bookingData.community.name || "-"}</p>
         <p>
-          <b>Plan:</b> {bookingData.plan?.type ? `${bookingData.plan.type} - ${bookingData.plan.weeks || "-"}` : "-"}
+          <b>Plan:</b> {bookingData.plan?.title ? `${bookingData.plan.title} - ${bookingData.plan.weeks || "-"}` : "-"}
         </p>
         <p><b>Bathrooms:</b> {bookingData.bathrooms || "-"}</p>
-        <p><b>Total Price:</b> ₹{bookingData.plan?.price || "0"}</p>
+        <p><b>Total Price:</b> ₹{bookingData.totalPrice || "0"}</p> 
       </div>
 
       <div className="flex justify-between">

@@ -7,9 +7,10 @@ import dbConnect from "@/lib/connectDB";
 
 export async function GET(req, context) {
     try {
+        const params = await context.params
+        const { id } = params
         await dbConnect()
-        const { params } = context        
-        const community = await Community.findById(params.id)
+        const community = await Community.findById(id)
         return NextResponse.json({ data: community }, { status: 200 })
     } catch (err) {
         return NextResponse.json({ error: err.message }, { status: 500 })
@@ -17,12 +18,12 @@ export async function GET(req, context) {
 }
 
 // to update a community
-export async function PATCH(req, context) {
+export async function PATCH(req, { params }) {
     try {
+        const { id } = params
         await dbConnect()
-        const { params } = context
         const body = await req.json()
-        const updated = await Community.findByIdAndUpdate(params.id, body, { new: true })
+        const updated = await Community.findByIdAndUpdate(id, body, { new: true })
         return NextResponse.json({ updated: updated }, { status: 200 })
     } catch (err) {
         return NextResponse.json({ error: err.message }, { status: 500 })
@@ -30,11 +31,11 @@ export async function PATCH(req, context) {
 }
 
 // to delete a community
-export async function DELETE(req, context) {
+export async function DELETE(req, { params }) {
     try {
+        const { id } = params
         await dbConnect()
-        const {params} = context
-        await Community.findByIdAndDelete(params.id)
+        await Community.findByIdAndDelete(id)
         return NextResponse.json({ status: 200 })
     } catch (err) {
         return NextResponse.json({ error: err.message }, { status: 500 })

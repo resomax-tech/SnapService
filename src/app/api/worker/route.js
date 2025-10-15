@@ -4,7 +4,7 @@ import Worker from "@/models/WorkerModel";
 import Community from "@/models/CommunityModel";
 
 
-export async function GET(req, context) {
+export async function GET(req) {
     try {
         await dbConnect()
         const { searchParams } = new URL(req.url)
@@ -16,10 +16,12 @@ export async function GET(req, context) {
         if (community) query.community = community
         if (workType) query.workType = workType
         
-        const workers = await Worker.find(query)
+        const workers = await Worker.find(query)        
 
-        return NextResponse.json({ data: workers }, { status: 200 })
+        return NextResponse.json({ workers: workers }, { status: 200 })
     } catch (error) {
+        console.log(error.message);
+        
         return NextResponse.json({ error: error.message }, { status: 500 })
     }
 }

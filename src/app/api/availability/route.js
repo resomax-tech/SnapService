@@ -4,6 +4,13 @@ import mongoose from "mongoose";
 import Job from "@/models/JobModel";
 import dbConnect from "@/lib/connectDB";
 
+
+const getDaysWindow = (weeks) => {
+  if (weeks?.includes("4W")) return 45;  // cover 4-week plan safely
+  if (weeks?.includes("2W")) return 30;  // cover 2-week plan safely
+  return 30; // default fallback
+};
+
 export async function GET(req) {
   try {
     await dbConnect()
@@ -11,30 +18,48 @@ export async function GET(req) {
 
     const community = searchParams.get('community')
     const workType = searchParams.get('plan')
-    console.log(community, workType);
-    
+    const weeks = searchParams.get('weeks')
+    const startDate = searchParams.get('startDate')
+
+
+    if (!community || !mongoose.Types.ObjectId.isValid(community)) {
+      return NextResponse.json({ msg: "Invalid or missing community ID" }, { status: 400 });
+    }
+
     const workers = await Worker.find({ community: new mongoose.Types.ObjectId(community), workType });
 
-    console.log("workers", workers);
-    
     const totalSlots = workers.reduce((sum, w) => sum + w.maxJobs, 0);
 
-    const availableDates = await checkAvailability(totalSlots, community, workType)
+    if (workers.length === 0) {
+      return NextResponse.json({ availableDates: {}, msg: "No workers found for this community and plan" });
+    }
 
-    return NextResponse.json({ availableDates })
+    const availableDates = await checkAvailability(startDate, totalSlots, community, workType, weeks)
+
+    const formatted = Object.entries(availableDates).map(([date, info]) => ({
+      date,
+      ...info,
+      fullBooked: info.available <= 0,
+      isHoliday: info.isHoliday || false
+    })).sort((a, b) => new Date(a.date) - new Date(b.date))
+
+    return NextResponse.json({ formatted })
   } catch (error) {
-    return NextResponse.json({ msg: error.message })
+    console.log(error);
+
+    return NextResponse.json({ msg: error.message }, { status: 500 });
   }
 }
 
-const checkAvailability = async (totalSlots, communityId, workType) => {
+const checkAvailability = async (startDate, totalSlots, communityId, workType, weeks) => {
   const availability = {};
 
-  const today = new Date();
+  const today = startDate ? new Date(startDate) : new Date();
   today.setUTCHours(0, 0, 0, 0);
 
   const endDate = new Date(today);
-  endDate.setUTCDate(today.getUTCDate() + 30);
+  endDate.setUTCDate(today.getUTCDate() + getDaysWindow(weeks));
+
 
   // 🔹 Single aggregation for all 30 days
   const booked = await Job.aggregate([
@@ -63,15 +88,19 @@ const checkAvailability = async (totalSlots, communityId, workType) => {
   }, {});
 
   // Build availability for each of the next 30 days
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < getDaysWindow(weeks); i++) {
     const date = new Date(today);
     date.setUTCDate(today.getUTCDate() + i);
 
     const dateKey = date.toISOString().split("T")[0];
-
+    const isHoliday = date.getUTCDay() === 0
     // Skip Sundays
-    if (date.getUTCDay() === 0) {
-      availability[dateKey] = { available: 0, total: totalSlots };
+    if (isHoliday) {
+      availability[dateKey] = {
+        available: 0,
+        total: totalSlots,
+        isHoliday
+      };
       continue;
     }
 
@@ -80,6 +109,7 @@ const checkAvailability = async (totalSlots, communityId, workType) => {
     availability[dateKey] = {
       available: totalSlots - bookedBathrooms,
       total: totalSlots,
+      isHoliday
     };
   }
 

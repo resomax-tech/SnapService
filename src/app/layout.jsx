@@ -1,12 +1,12 @@
 import "./globals.css";
+import "react-day-picker/dist/style.css";  // base styles
+
 import { Plus_Jakarta_Sans } from "next/font/google";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import { BookingProvider } from "@/lib/bookingContext";
 import { AuthProvider } from "@/lib/authContext";
-
-import PreloaderWrapper from "@/components/Preloader/PreloaderWrapper";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],

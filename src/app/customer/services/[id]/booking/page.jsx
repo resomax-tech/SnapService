@@ -5,23 +5,20 @@ import { useState } from "react";
 
 import BookingForm from "@/components/BookingForm";
 import StepIndicator from "@/components/bookingfolder/StepIndicator";
+import { useBooking } from "@/lib/bookingContext";
 
 export default function BookingPage() {
-  const searchParams = useSearchParams();
-  const community = searchParams.get("community") || "Not Selected";
-  const plan = searchParams.get("plan") || "bathroom-cleaning";
-  const bathrooms = searchParams.get("bathrooms") || "1";
+  const { bookingData, updateBooking } = useBooking()
+  const plan = bookingData?.plan?.title || 'Bathroom Cleaning Service';
 
   const [step, setStep] = useState(1); // Step state lifted here
 
-  // Map plan IDs to display names
-  const planName =
-    plan.includes("bathroom") ? "Bathroom Cleaning Service" :
-    plan.includes("classic") ? "Classic Cleaning Service" :
-    plan.includes("deep") ? "Deep Cleaning Service" :
-    "Cleaning Service";
 
-  const price = "Rs. 900 Per Month"; // temporary until backend
+
+  // Map plan IDs to display names
+  const price = bookingData?.plan?.price
+    ? `Rs. ${bookingData.plan.price} Per Month`
+    : "Price unavailable";
   const taxInfo = "Exclusive of all taxes";
 
   return (
@@ -31,7 +28,8 @@ export default function BookingPage() {
 
       {/* Cart Summary */}
       <div className="bg-gray-50 p-4 rounded-xl shadow border border-gray-200  mb-6">
-        <h2 className="text-lg font-bold text-gray-800 mb-2">{planName}</h2>
+        <h2 className="text-lg font-bold text-gray-800">{plan + " Service"}</h2>
+        <span className="mb-4 text-sm font-semibold">{bookingData?.plan?.weeks}</span>
         <p className="text-xl font-semibold text-gray-900">{price}</p>
         <p className="text-sm text-green-600 mt-1">{taxInfo}</p>
       </div>

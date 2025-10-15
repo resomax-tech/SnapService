@@ -3,43 +3,52 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useBooking } from "@/lib/bookingContext";
-
-export default function Step1({ formData, setFormData, nextStep }) {
+import { BookingCalendar } from "@/components/BookingCalendar"
+export default function Step1({ nextStep }) {
   const router = useRouter();
+  const [msg, setMsg] = useState('')
   const [availableDates, setAvailableDates] = useState([])
-  const {bookingData, updateBooking} = useBooking()
-  
-  console.log(bookingData);
-  
-  const fetchDates = async () => {
+  const { bookingData, updateBooking } = useBooking()
+
+  const fetchDates = async (date) => {
     const params = {
       community: bookingData.community._id,
-      plan: bookingData.plan.type
+      plan: bookingData.plan.type || "classic",
+      weeks: bookingData.plan.key,
+      startDate: date || new Date()
     }
     try {
-      const response = await axios.get('/api/availability', {params})
-      console.log(response.data);
-      setAvailableDates(response.data.availableDates)
-      
+      const response = await axios.get('/api/availability', { params })
+      setAvailableDates(response.data.formatted)
+      setMsg(response.data.msg)
     } catch (error) {
       console.log("error: ", error.message);
     }
   }
   useEffect(() => {
-    fetchDates()
-  }, [])
+    if (bookingData?.community?._id && bookingData?.plan?.type) {
+      fetchDates();
+    }
+  }, [bookingData]);
+
+  const handleDates = (dates) => {
+    updateBooking({ dates })
+  }
 
 
   return (
     <div>
       <div className="bg-gray-50 p-4 rounded-lg shadow">
         <h3 className="font-semibold mb-2">Booking Date</h3>
-        <input
-          type="date"
-          value={formData.date}
-          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-          className="border p-2 rounded w-full"
-        />
+        {
+          availableDates ? <BookingCalendar
+            fetchDates={fetchDates}
+            planType={bookingData.plan?.key || "4W"}
+            availableDates={availableDates}
+            onDatesSelected={handleDates}
+          /> : <p className="font-medium text-2xl text-center">{msg}</p>
+        }
+
       </div>
 
       <div className="flex justify-between mt-6">
@@ -51,7 +60,7 @@ export default function Step1({ formData, setFormData, nextStep }) {
         </button>
 
         <button
-          disabled={!formData.date}
+          disabled={!bookingData.dates || bookingData.dates.length === 0}
           onClick={nextStep}
           className="bg-yellow-500 text-white px-6 py-2 rounded font-medium disabled:opacity-50"
         >

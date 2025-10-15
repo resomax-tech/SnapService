@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Edit, Trash2, Plus } from "lucide-react";
 
+
 export default function WorkersPage() {
   const [workers, setWorkers] = useState([]);
   const [communities, setCommunities] = useState([]); // Needed to map community names
@@ -12,6 +13,7 @@ export default function WorkersPage() {
   const [worker, setWorker] = useState({
     name: "",
     mobile: "",
+    community: "",
     community: "",
     workType: "classic",
     maxJobs: 5,
@@ -34,7 +36,7 @@ export default function WorkersPage() {
       setWorkers(response.data.workers || []);
     } catch (error) {
       console.log("error while fetching communities");
-      setWoekers([]);
+      setWorkers([]);
     }
   }
 
@@ -52,12 +54,12 @@ export default function WorkersPage() {
   const handleWorkerSubmit = async (e) => {
     e.preventDefault();
     if (editingWorker) {
-      console.log(editingWorker._id);
       await axios.patch(`/api/worker/${editingWorker._id}`, worker)
     } else {
       await axios.post(`/api/worker`, worker)
     }
     await fetchWorkers()
+
 
     setShowWorkerModal(false);
   };
@@ -72,6 +74,7 @@ export default function WorkersPage() {
       workType: w?.workType || "",
       maxJobs: w?.maxJobs || ""
     });
+
     setShowWorkerModal(true);
   };
 
@@ -122,6 +125,7 @@ export default function WorkersPage() {
           <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
             <thead className="bg-gray-100 text-gray-700">
               <tr>
+                <th className="p-2 text-left">S.No</th>
                 <th className="p-2 text-left">Name</th>
                 <th className="p-2 text-left">Mobile</th>
                 <th className="p-2 text-left">Community</th>
@@ -133,6 +137,7 @@ export default function WorkersPage() {
             <tbody>
               {filteredWorkers.map((w, idx) => (
                 <tr key={w._id} className={idx % 2 === 0 ? "" : "bg-gray-50"}>
+                  <td className="p-2">{idx+1}</td>
                   <td className="p-2">{w.name}</td>
                   <td className="p-2">{w.mobile}</td>
                   <td className="p-2">{getCommunityName(w.community)}</td>
@@ -146,7 +151,7 @@ export default function WorkersPage() {
                       <Edit size={16} />
                     </button>
                     <button
-                      onClick={() => handleWorkerDelete(w._id)}
+                      onClick={() => handleWorkerDelete(w.__id)}
                       className="text-white bg-[#e11c48] p-2 rounded-md"
                     >
                       <Trash2 size={16} />
@@ -218,7 +223,7 @@ export default function WorkersPage() {
                 >
                   <option value="">Select community</option>
                   {communities.map((c) => (
-                    <option key={c._id} value={c._id}>
+                    <option key={c.__id} value={c.__id}>
                       {c.name}
                     </option>
                   ))}
