@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-
+import { motion } from "framer-motion";
 import PlanCard from "@/components/PlanCard";
 import axios from "axios";
 
@@ -16,17 +16,13 @@ export default function CommunityPage() {
   useEffect(() => {
     const fetchCommunities = async () => {
       try {
-        const response = await axios.get('/api/community/')
-        // console.log("communities: ", response.data.communities);
-        
-        setCommunities(response.data.communities)
-      } catch (error) {
-      }
+        const response = await axios.get("/api/community/");
+        setCommunities(response.data.communities);
+      } catch (error) {}
     };
     fetchCommunities();
   }, []);
 
-  // Mapping plan details
   const PLAN_DETAILS = {
     twoweekclassic: {
       id: "classic-4w",
@@ -58,7 +54,6 @@ export default function CommunityPage() {
     },
   };
 
-  // Handle community selection
   const handleCommunitySelect = (name) => {
     const communityObject = communities.find((c) => c.name === name);
     if (communityObject) {
@@ -70,7 +65,6 @@ export default function CommunityPage() {
     }
   };
 
-  // Reusable Contact Us section
   const ContactSection = () => (
     <div className="bg-gray-100 shadow-sm p-4 rounded-lg mb-6 mt-10">
       <p className="text-gray-700">
@@ -84,6 +78,22 @@ export default function CommunityPage() {
       </a>
     </div>
   );
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2, // delay between each card
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 40 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+  };
 
   return (
     <main className="max-w-5xl mx-auto p-6 min-h-screen">
@@ -109,16 +119,21 @@ export default function CommunityPage() {
         </select>
       </div>
 
-      {/* Show Contact section first if no community selected */}
       {!selectedCommunity && <ContactSection />}
 
-      {/* Plans */}
+      {/* Plans Section with animation */}
       {selectedCommunity && Object.keys(plans).length > 0 && (
-        <div>
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="mt-4"
+        >
           <h2 className="text-xl font-semibold mb-4">
             Available Plans in {selectedCommunity.name}
           </h2>
-          <div className="grid md:grid-cols-3  gap-2">
+
+          <div className="grid md:grid-cols-3 gap-4">
             {Object.entries(plans).map(([planName]) => {
               const baseDetails = PLAN_DETAILS[planName];
               if (!baseDetails) return null;
@@ -126,19 +141,19 @@ export default function CommunityPage() {
               const details = { ...baseDetails, price: plans[planName] };
 
               return (
-                <PlanCard
-                  key={details.id}
-                  plan={details}
-                  serviceId={serviceId}
-                  community={selectedCommunity}
-                />
+                <motion.div key={details.id} variants={cardVariants}>
+                  <PlanCard
+                    plan={details}
+                    serviceId={serviceId}
+                    community={selectedCommunity}
+                  />
+                </motion.div>
               );
             })}
           </div>
-        </div>
+        </motion.div>
       )}
 
-      {/* Show Contact section last if community selected */}
       {selectedCommunity && <ContactSection />}
     </main>
   );
