@@ -13,8 +13,7 @@ export default function WorkersPage() {
   const [worker, setWorker] = useState({
     name: "",
     mobile: "",
-    community: "",
-    community: "",
+    communities: [],
     workType: "classic",
     maxJobs: 5,
   });
@@ -46,35 +45,59 @@ export default function WorkersPage() {
   }, []);
 
   /** Worker Handlers */
+  /** Worker Handlers */
   const handleWorkerChange = (e) => {
     const { name, value } = e.target;
-    setWorker((prev) => ({ ...prev, [name]: value }));
+    setWorker((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleCommunityChange = (index, value) => {
+    setWorker((prev) => {
+      const updated = [...(prev.communities || [])];
+      updated[index] = value;
+      return { ...prev, communities: updated };
+    });
   };
 
   const handleWorkerSubmit = async (e) => {
     e.preventDefault();
-    if (editingWorker) {
-      await axios.patch(`/api/worker/${editingWorker._id}`, worker)
-    } else {
-      await axios.post(`/api/worker`, worker)
+
+    const payload = {
+      ...worker,
+      community: worker.communities || [],
+    };
+
+    try {
+      if (editingWorker) {
+        await axios.patch(`/api/worker/${editingWorker._id}`, payload);
+      } else {
+        await axios.post(`/api/worker`, payload);
+      }
+
+      await fetchWorkers();
+      setEditingWorker(null);
+      setShowWorkerModal(false);
+    } catch (error) {
+      console.error("Error saving worker:", error);
     }
-    await fetchWorkers()
-
-
-    setShowWorkerModal(false);
   };
 
   const handleWorkerEdit = (w) => {
     setEditingWorker(w);
-
     setWorker({
       name: w.name,
       mobile: w?.mobile || "",
-      community: w.community || "",
-      workType: w?.workType || "",
-      maxJobs: w?.maxJobs || ""
+      communities: Array.isArray(w.community)
+        ? w.community
+        : w.community
+          ? [w.community]
+          : [],
+      workType: w?.workType || "classic",
+      maxJobs: w?.maxJobs || 5,
     });
-
     setShowWorkerModal(true);
   };
 
@@ -103,7 +126,7 @@ export default function WorkersPage() {
           <button
             onClick={() => {
               setEditingWorker(null);
-              setWorker({ name: "", mobile: "", communityId: "", workType: "classic", maxJobs: 5 });
+              setWorker({ name: "", mobile: "", communities: [], workType: "classic", maxJobs: 5 });
               setShowWorkerModal(true);
             }}
             className="bg-gray-700 text-white p-2 rounded-md hover:bg-gray-500 flex items-center gap-2"
@@ -128,7 +151,8 @@ export default function WorkersPage() {
                 <th className="p-2 text-left">S.No</th>
                 <th className="p-2 text-left">Name</th>
                 <th className="p-2 text-left">Mobile</th>
-                <th className="p-2 text-left">Community</th>
+                <th className="p-2 text-left">CommunityA</th>
+                <th className="p-2 text-left">CommunityB</th>
                 <th className="p-2 text-left">Work Type</th>
                 <th className="p-2 text-left">Max Jobs</th>
                 <th className="p-2 text-left">Actions</th>
@@ -137,10 +161,20 @@ export default function WorkersPage() {
             <tbody>
               {filteredWorkers.map((w, idx) => (
                 <tr key={w._id} className={idx % 2 === 0 ? "" : "bg-gray-50"}>
-                  <td className="p-2">{idx+1}</td>
+                  <td className="p-2">{idx + 1}</td>
                   <td className="p-2">{w.name}</td>
                   <td className="p-2">{w.mobile}</td>
-                  <td className="p-2">{getCommunityName(w.community)}</td>
+                  <td className="p-2">
+                    {getCommunityName(
+                      Array.isArray(w.community) ? w.community[0] : w.community
+                    ) || "-"}
+                  </td>
+                  <td className="p-2">
+                    {getCommunityName(
+                      Array.isArray(w.community) ? w.community[1] : ""
+                    ) || "-"}
+                  </td>
+
                   <td className="p-2 capitalize">{w.workType}</td>
                   <td className="p-2">{w.maxJobs}</td>
                   <td className="p-2 flex gap-2">
@@ -183,7 +217,7 @@ export default function WorkersPage() {
             {/* Form */}
             <form onSubmit={handleWorkerSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Name (full width) */}
-              <div className="md:col-span-2">
+              <div>
                 <label className="block text-sm font-medium">Name</label>
                 <input
                   type="text"
@@ -212,23 +246,42 @@ export default function WorkersPage() {
               </div>
 
               {/* Community */}
+              {/* Communities A & B side by side */}
               <div>
-                <label className="block text-sm font-medium">Community</label>
+
+                <label className="block text-sm font-medium">Community A</label>
                 <select
-                  name="community"
-                  value={worker.community}
-                  onChange={handleWorkerChange}
+                  value={worker.communities[0] || ""}
+                  onChange={(e) => handleCommunityChange(0, e.target.value)}
                   className="w-full border rounded-md p-2"
                   required
                 >
                   <option value="">Select community</option>
                   {communities.map((c) => (
-                    <option key={c.__id} value={c.__id}>
+                    <option key={c._id} value={c._id}>
                       {c.name}
                     </option>
                   ))}
                 </select>
               </div>
+
+              {/* Community B */}
+              <div>
+                <label className="block text-sm font-medium">Community B</label>
+                <select
+                  value={worker.communities[1] || ""}
+                  onChange={(e) => handleCommunityChange(1, e.target.value)}
+                  className="w-full border rounded-md p-2"
+                >
+                  <option value="">Select community</option>
+                  {communities.map((c) => (
+                    <option key={c._id} value={c._id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
 
               {/* Work Type */}
               <div>
@@ -274,10 +327,11 @@ export default function WorkersPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div >
 
-      )}
-    </main>
+      )
+      }
+    </main >
   );
 }
 
