@@ -3,6 +3,7 @@ import Worker from "@/models/WorkerModel";
 import mongoose from "mongoose";
 import Job from "@/models/JobModel";
 import dbConnect from "@/lib/connectDB";
+import { normalizeLocalDate, toDateKey, fromDateKey } from "@/lib/normalizeDate";
 
 
 const getDaysWindow = (weeks) => {
@@ -54,11 +55,21 @@ export async function GET(req) {
 const checkAvailability = async (startDate, totalSlots, communityId, workType, weeks) => {
   const availability = {};
 
-  const today = startDate ? new Date(startDate) : new Date();
-  today.setUTCHours(0, 0, 0, 0);
+  const today = startDate ? normalizeLocalDate(startDate) : normalizeLocalDate(new Date());
 
-  const endDate = new Date(today);
-  endDate.setUTCDate(today.getUTCDate() + getDaysWindow(weeks));
+  const endDate = normalizeLocalDate(new Date(today))
+  endDate.setDate(today.getDate() + getDaysWindow(weeks) + 1);
+
+  //   console.log("Searching jobs between:", today.toISOString(), "and", endDate.toISOString());
+  // console.log("WorkType:", workType.toLowerCase());
+
+  // const test = await Job.findOne({
+  //   community: new mongoose.Types.ObjectId(String(communityId)),
+  //   workType: workType.toLowerCase(),
+  // });
+
+  // console.log("Found Job:", test);
+
 
 
   // 🔹 Single aggregation for all 30 days
@@ -80,6 +91,9 @@ const checkAvailability = async (startDate, totalSlots, communityId, workType, w
     },
   ]);
 
+  console.log(communityId, booked, workType, today, endDate);
+
+
 
   // Convert aggregation result into a map { "2025-03-07": 5, "2025-03-08": 10, ... }
   const bookedMap = booked.reduce((acc, b) => {
@@ -90,10 +104,10 @@ const checkAvailability = async (startDate, totalSlots, communityId, workType, w
   // Build availability for each of the next 30 days
   for (let i = 0; i < getDaysWindow(weeks); i++) {
     const date = new Date(today);
-    date.setUTCDate(today.getUTCDate() + i);
+    date.setDate(today.getDate() + i);
 
-    const dateKey = date.toISOString().split("T")[0];
-    const isHoliday = date.getUTCDay() === 0
+    const dateKey = toDateKey(date).split("T")[0];
+    const isHoliday = date.getDay() === 0
     // Skip Sundays
     if (isHoliday) {
       availability[dateKey] = {

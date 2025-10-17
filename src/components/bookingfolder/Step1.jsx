@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useBooking } from "@/lib/bookingContext";
 import { BookingCalendar } from "@/components/BookingCalendar"
+import { normalizeLocalDate, toDateKey } from "@/lib/normalizeDate";
 export default function Step1({ nextStep }) {
   const router = useRouter();
   const [msg, setMsg] = useState('')
@@ -15,11 +16,21 @@ export default function Step1({ nextStep }) {
       community: bookingData.community._id,
       plan: bookingData.plan.type || "classic",
       weeks: bookingData.plan.key,
-      startDate: date || new Date()
+      startDate: normalizeLocalDate(date) || new Date()
     }
     try {
+      
       const response = await axios.get('/api/availability', { params })
-      setAvailableDates(response.data.formatted)
+      const newData = response.data.formatted
+      console.log("recieved: ", newData);
+      setAvailableDates((prev) => {
+        const map = new Map();
+        [...prev, ...newData].forEach((d) => map.set(d.date, d));
+        return Array.from(map.values()).sort(
+          (a, b) => new Date(a.date) - new Date(b.date)
+        );
+      });
+
       setMsg(response.data.msg)
     } catch (error) {
       console.log("error: ", error.message);
@@ -29,11 +40,15 @@ export default function Step1({ nextStep }) {
     if (bookingData?.community?._id && bookingData?.plan?.type) {
       fetchDates();
     }
-  }, [bookingData]);
+  }, []);
 
-  const handleDates = (dates) => {
-    updateBooking({ dates })
-  }
+
+const handleDates = (dates) => {
+  const dateKeys = dates.map(toDateKey);
+  updateBooking({ dates: dateKeys });
+};
+
+
 
 
   return (

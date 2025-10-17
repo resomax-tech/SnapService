@@ -1,12 +1,13 @@
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import { useState, useEffect } from "react";
-import "../../src/app/globals.css";
+import { normalizeLocalDate, toDateKey } from "@/lib/normalizeDate";
 
 export const BookingCalendar = ({
     planType = "",
     onDatesSelected = () => { },
     availableDates = [],
+    fetchDates
 }) => {
     const [selected, setSelected] = useState([]);
     const today = new Date();
@@ -16,16 +17,16 @@ export const BookingCalendar = ({
         setSelected([]);
     }, [planType]);
 
-    // 🧩 Compute disabled days (Sundays, past, fully booked)
+    // Compute disabled days (Sundays, past, fully booked)
     const bookedDates =
         availableDates.filter((d) => d.fullBooked).map((d) => new Date(d.date)) || [];
 
     const disabledDays = [{ dayOfWeek: [0] }, { before: today }, ...bookedDates];
 
-    // 🧩 Handle selection logic
+    // Handle selection logic
     const handleDateClick = (date) => {
-        const selectedDate = new Date(date)
-        const latestAvailable = new Date(availableDates.at(-1)?.date);
+        const selectedDate = normalizeLocalDate(date)
+        const latestAvailable = normalizeLocalDate(availableDates.at(-15)?.date);
 
         if (!date) return;
         const plan = (planType || "").toUpperCase();
@@ -34,21 +35,21 @@ export const BookingCalendar = ({
 
         const recurringDates = [];
         for (let i = 0; i < occurrences; i++) {
-            const d = new Date(date);
+            const d = normalizeLocalDate(date)
             d.setDate(d.getDate() + i * gap);
             recurringDates.push(d);
         }
         setSelected(recurringDates);
-        onDatesSelected(recurringDates);
+        onDatesSelected(recurringDates);       
 
-        if (selectedDate > latestAvailable) {
+        if (selectedDate > latestAvailable) {        
             fetchDates(selectedDate)
         }
     };
 
     // Find slot info for each selected date
     const getSlotInfo = (date) => {
-        const formatted = date.toLocaleDateString("en-CA"); // outputs "YYYY-MM-DD" in local timezone
+        const formatted = toDateKey(date)
         const day = availableDates.find((d) => d.date === formatted);
 
         if (!day) return "No data";
@@ -86,7 +87,7 @@ export const BookingCalendar = ({
                             key={i}
                             className="flex justify-between items-center px-4 py-2 border border-gray-500 rounded-md bg-gray-50 text-sm"
                         >
-                            <span>📅 {d.toLocaleDateString()}</span>
+                            <span>📅 {toDateKey(d)}</span>
                             <span className={`font-medium ${getSlotColor(d)}`}>
                                 {getSlotInfo(d)}
                             </span>

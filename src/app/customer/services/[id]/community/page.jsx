@@ -29,28 +29,28 @@ export default function CommunityPage() {
   // Mapping plan details
   const PLAN_DETAILS = {
     twoweekclassic: {
-      id: "classic-2w",
+      id: "2W_CLASSIC",
       title: "Classic Cleaning",
       type: "classic",
       weeks: "2 Weeks/Month",
       price: 0,
     },
     twoweekdeep: {
-      id: "deep-2w",
+      id: "2W_DEEP",
       title: "Deep Cleaning",
       type: "deep",
       weeks: "2 Weeks/Month",
       price: 0,
     },
     fourweekclassic: {
-      id: "classic-4w",
+      id: "4W_CLASSIC",
       title: "Classic Cleaning",
       type: "classic",
       weeks: "4 Weeks/Month",
       price: 0,
     },
     fourweekdeep: {
-      id: "deep-4w",
+      id: "4W_DEEP",
       title: "Deep Cleaning",
       type: "deep",
       weeks: "4 Weeks/Month",

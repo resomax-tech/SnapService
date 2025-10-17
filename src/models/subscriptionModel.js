@@ -41,8 +41,12 @@ const subscriptionSchema = new mongoose.Schema({
   },
   message: {
     type: String,
+  },
+  totalPrice: {
+    type: Number,
+    required: true
   }
-  
+
 }, { timestamps: true });
 
 export default mongoose.models.Subscription || mongoose.model("Subscription", subscriptionSchema);

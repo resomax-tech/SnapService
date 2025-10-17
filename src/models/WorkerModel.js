@@ -13,10 +13,12 @@ const WorkerSchema = new mongoose.Schema({
         unique: true,
         match: [/^\d{10}$/, "Mobile must be 10 digits"]
     },
-    community: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Community"
-    },
+    community: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Community"
+        }
+    ],
     workType: {
         type: String,
         enum: ["classic", "deep"],

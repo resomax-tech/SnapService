@@ -40,11 +40,11 @@ export function BookingProvider({ children }) {
 
     const updateBooking = (updates) => {
         setBookingData((prev) => ({ ...prev, ...updates }))
-        console.log(bookingData);  // remove for testing 
+        // console.log(bookingData);  // remove for testing 
     }
 
     const resetBooking = () => {
-        setBookingData({
+    setBookingData({
             community: null,
             message: null,
             plan: null,

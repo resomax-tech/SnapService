@@ -2,79 +2,90 @@ import { NextResponse } from "next/server";
 import Subscription from "@/models/subscriptionModel";
 import Job from "@/models/JobModel";
 import dbConnect from "@/lib/connectDB";
+import { normalizeLocalDate } from "@/lib/normalizeDate";
 import { decryptToken } from "@/lib/auth";
 
 export async function POST(req) {
     try {
-        await dbConnect()
-        const body = await req.json()
-
+        await dbConnect();
+        const body = await req.json();
+        // Validate login token
         const token = req.cookies.get("access_token")?.value;
         if (!token) {
-            return NextResponse.json({ loggedIn: false });
+            return NextResponse.json({ loggedIn: false }, { status: 401 });
         }
-        const payload = await decryptToken(token)
+        
+        const payload = await decryptToken(token);
+        body.user = payload.sub; 
+        
+        // console.log("updated :", body);
+        // Normalize dates before saving
+        if (!Array.isArray(body.bookedDates) || body.bookedDates.length === 0) {           
+            return NextResponse.json({ error: "No booking dates provided" }, { status: 400 });
+        }
 
-        body.user = payload.sub
-        body.bookedDates = generateDates(body.startDate, body.plan)
+        // Convert "YYYY-MM-DD" → Date objects
+        const bookedDates = body.bookedDates.map((d) => normalizeLocalDate(d));
 
-        const subscription = await Subscription.create(body)
+        //  Create subscription
+        const subscription = await Subscription.create({
+            ...body,
+            bookedDates, 
+        });
 
-        await generateJobs(subscription)
+        // Generate Jobs (await properly)
+        await generateJobs(subscription);
 
         return NextResponse.json(
             {
                 msg: "Subscription created successfully",
-                subscription,
-                jobs: body.bookedDates.length
+                subscriptionId: subscription._id,
+                totalJobs: bookedDates.length,
             },
             { status: 201 }
         );
     } catch (error) {
-        return NextResponse.json({ error: error.message })
+        console.error("Subscription creation error:", error.message);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
+
 export async function GET(req) {
     try {
-        const subscriptions = await Subscription.find({})
-        return NextResponse.json({ subscriptions: subscriptions })
+        await dbConnect();
+        const subscriptions = await Subscription.find({});
+        return NextResponse.json({ subscriptions });
     } catch (error) {
-        return NextResponse.json({ error: error.message })
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
-
-const generateDates = (startDate, plan) => {
-    const date = startDate
-    const recurringDates = []
-    const gap = plan.includes("4w") ? 7 : 14
-    const occurences = plan.includes("4w") ? 4 : 2
-
-    for (let i = 0; i < occurences; i++) {
-        const d = new Date(date)
-        d.setDate(d.getDate() + i * gap)
-        recurringDates.push(d)
-    }
-
-
-    return recurringDates
-}
-
 
 const generateJobs = async (subscription) => {
     try {
+        const jobType = subscription.plan?.key?.toLowerCase().includes("classic")
+            ? "classic"
+            : "deep";
+
+        console.log("subscription: ", subscription);
+        
+
         await Promise.all(
-            subscription.bookedDates.map((d) => {
+            subscription.bookedDates.map((d) =>
+                // console.log("d:",normalizeLocalDate(d))
+                
                 Job.create({
-                    subscriptionId: subscription._id,
-                    communityId: subscription.community,
-                    date: new Date(d.toISOString().split("T")[0]),
-                    jobType: subscription.plan.includes("CLASSIC") ? "classic" : "deep",
-                    bathrooms: subscription.bathrooms
+                    subscription: subscription._id,
+                    community: subscription.community,
+                    date: normalizeLocalDate(d),
+                    workType: jobType,
+                    bathrooms: subscription.bathrooms,
                 })
-            })
-        )
+            )
+        );
+
+        console.log(`Created ${subscription.bookedDates.length} jobs for subscription ${subscription._id}`);
     } catch (error) {
-        console.error("Error creating jobs:", error.message);
+        console.error("❌ Error creating jobs:", error.message);
         throw new Error("Job generation failed");
     }
-}
+};
