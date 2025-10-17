@@ -7,7 +7,7 @@ import { Edit, Trash2, Plus } from "lucide-react";
 
 export default function WorkersPage() {
   const [workers, setWorkers] = useState([]);
-  const [communities, setCommunities] = useState([]); // Needed to map community names
+  const [communities, setCommunities] = useState([]); // Needed to map communities names
   const [showWorkerModal, setShowWorkerModal] = useState(false);
   const [editingWorker, setEditingWorker] = useState(null);
   const [worker, setWorker] = useState({
@@ -15,7 +15,7 @@ export default function WorkersPage() {
     mobile: "",
     communities: [],
     workType: "classic",
-    maxJobs: 5,
+    maxJobs: 7,
   });
   const [searchWorker, setSearchWorker] = useState("");
 
@@ -45,7 +45,6 @@ export default function WorkersPage() {
   }, []);
 
   /** Worker Handlers */
-  /** Worker Handlers */
   const handleWorkerChange = (e) => {
     const { name, value } = e.target;
     setWorker((prev) => ({
@@ -67,7 +66,9 @@ export default function WorkersPage() {
 
     const payload = {
       ...worker,
-      community: worker.communities || [],
+      communities: (worker.communities || []).filter(
+      (c) => c && c.trim() !== ""
+    ),
     };
 
     try {
@@ -90,10 +91,10 @@ export default function WorkersPage() {
     setWorker({
       name: w.name,
       mobile: w?.mobile || "",
-      communities: Array.isArray(w.community)
-        ? w.community
-        : w.community
-          ? [w.community]
+      communities: Array.isArray(w.communities)
+        ? w.communities
+        : w.communities
+          ? [w.communities]
           : [],
       workType: w?.workType || "classic",
       maxJobs: w?.maxJobs || 5,
@@ -101,9 +102,9 @@ export default function WorkersPage() {
     setShowWorkerModal(true);
   };
 
-  const handleWorkerDelete = async (id) => {
+  const handleWorkerDelete = async (w) => {
     if (confirm("Are you sure you want to delete this worker?")) {
-      await axios.delete(`/api/worker/${id}`)
+      await axios.delete(`/api/worker/${w._id}`)
       fetchWorkers()
     }
   };
@@ -151,8 +152,8 @@ export default function WorkersPage() {
                 <th className="p-2 text-left">S.No</th>
                 <th className="p-2 text-left">Name</th>
                 <th className="p-2 text-left">Mobile</th>
-                <th className="p-2 text-left">CommunityA</th>
-                <th className="p-2 text-left">CommunityB</th>
+                <th className="p-2 text-left">community A</th>
+                <th className="p-2 text-left">community B</th>
                 <th className="p-2 text-left">Work Type</th>
                 <th className="p-2 text-left">Max Jobs</th>
                 <th className="p-2 text-left">Actions</th>
@@ -165,14 +166,10 @@ export default function WorkersPage() {
                   <td className="p-2">{w.name}</td>
                   <td className="p-2">{w.mobile}</td>
                   <td className="p-2">
-                    {getCommunityName(
-                      Array.isArray(w.community) ? w.community[0] : w.community
-                    ) || "-"}
+                    {getCommunityName(w.communities[0]) || "-"}
                   </td>
                   <td className="p-2">
-                    {getCommunityName(
-                      Array.isArray(w.community) ? w.community[1] : ""
-                    ) || "-"}
+                    {getCommunityName(w.communities[1]) || "-"}
                   </td>
 
                   <td className="p-2 capitalize">{w.workType}</td>
@@ -185,7 +182,7 @@ export default function WorkersPage() {
                       <Edit size={16} />
                     </button>
                     <button
-                      onClick={() => handleWorkerDelete(w.__id)}
+                      onClick={() => handleWorkerDelete(w)}
                       className="text-white bg-[#e11c48] p-2 rounded-md"
                     >
                       <Trash2 size={16} />
@@ -245,15 +242,15 @@ export default function WorkersPage() {
                 />
               </div>
 
-              {/* Community */}
+              {/* communities */}
               {/* Communities A & B side by side */}
               <div>
 
-                <label className="block text-sm font-medium">Community A</label>
+                <label className="block text-sm font-medium">community A</label>
                 <select
                   value={worker.communities[0] || ""}
                   onChange={(e) => handleCommunityChange(0, e.target.value)}
-                  className="w-full border rounded-md p-2"
+                  className="w-full rounded-md p-2"
                   required
                 >
                   <option value="">Select community</option>
@@ -265,9 +262,9 @@ export default function WorkersPage() {
                 </select>
               </div>
 
-              {/* Community B */}
+              {/* communities B */}
               <div>
-                <label className="block text-sm font-medium">Community B</label>
+                <label className="block text-sm font-medium">community B</label>
                 <select
                   value={worker.communities[1] || ""}
                   onChange={(e) => handleCommunityChange(1, e.target.value)}
