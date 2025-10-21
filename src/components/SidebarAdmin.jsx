@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutDashboard, Building2, UserCog, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, Building2, UserCog, Users, LogOut, ArrowLeftRight, FileSpreadsheet } from "lucide-react";
 
 const sidebarItems = [
   { name: "Dashboard", path: "/admin", icon: <LayoutDashboard size={18} /> },
   { name: "Communities", path: "/admin/communities", icon: <Building2 size={18} /> },
   { name: "Workers", path: "/admin/workers", icon: <UserCog size={18} /> },
   { name: "Customers", path: "/admin/customers", icon: <Users size={18} /> },
+  { name: "Transactions", path: "/admin/transactions", icon: <ArrowLeftRight size={18} /> },
+  {name:"Generate Sheets",path:"/admin/generatesheets",icon:<FileSpreadsheet size={18}/>}
 ];
 
 export default function Sidebar() {
