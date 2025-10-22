@@ -13,13 +13,13 @@ export default function Sidebar({ menuOpen, setMenuOpen }) {
     { href: "/privacy", label: "Privacy Policy" },
     { href: "/terms", label: "Terms" },
     { href: "/customer/account/profile", label: "Account" },
-    { href: "/admin", label: "Admin" },
+    { href: "/admin/login", label: "Admin" },
 
   ];
 
   return (
     <>
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setMenuOpen(false)} />
+      <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setMenuOpen(false)} />
       <aside className="fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 translate-x-0">
         <div className="flex items-center justify-between px-4 py-3 border-b border-[#e2e2e2]">
           <h2 className="text-2xl font-semibold py-2">Menu</h2>

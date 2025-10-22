@@ -18,7 +18,7 @@ export default function CommunityPage() {
       try {
         const response = await axios.get('/api/community/')
         // console.log("communities: ", response.data.communities);
-        
+
         setCommunities(response.data.communities)
       } catch (error) {
       }
@@ -28,29 +28,29 @@ export default function CommunityPage() {
 
   // Mapping plan details
   const PLAN_DETAILS = {
-    twoweekclassic: {
-      id: "2W_CLASSIC",
+    fourweekclassic: {
+      id: "4W_CLASSIC",
       title: "Classic Cleaning",
       type: "classic",
       weeks: "4 Weeks/Month",
       price: 0,
     },
-    twoweekdeep: {
-      id: "2W_DEEP",
+    fourweekdeep: {
+      id: "4W_DEEP",
       title: "Deep Cleaning",
       type: "deep",
       weeks: "4 Weeks/Month",
       price: 0,
     },
-    fourweekclassic: {
-      id: "4W_CLASSIC",
+    twoweekclassic: {
+      id: "2W_CLASSIC",
       title: "Classic Cleaning",
       type: "classic",
       weeks: "2 Weeks/Month",
       price: 0,
     },
-    fourweekdeep: {
-      id: "4W_DEEP",
+    twoweekdeep: {
+      id: "2W_DEEP",
       title: "Deep Cleaning",
       type: "deep",
       weeks: "2 Weeks/Month",
@@ -119,21 +119,29 @@ export default function CommunityPage() {
             Available Plans in {selectedCommunity.name}
           </h2>
           <div className="grid md:grid-cols-3  gap-2">
-            {Object.entries(plans).map(([planName]) => {
-              const baseDetails = PLAN_DETAILS[planName];
-              if (!baseDetails) return null;
+            {Object.entries(plans)
+              // ✅ Sort so 4-week plans come first
+              .sort(([a], [b]) => {
+                const isA4W = a.toLowerCase().includes("fourweek");
+                const isB4W = b.toLowerCase().includes("fourweek");
+                if (isA4W && !isB4W) return -1;  // a before b
+                if (!isA4W && isB4W) return 1;   // b after a
+                return 0;                        // same group, keep order
+              })
+              .map(([planName]) => {
+                const baseDetails = PLAN_DETAILS[planName];
+                if (!baseDetails) return null;
+                const details = { ...baseDetails, price: plans[planName] };
+                return (
+                  <PlanCard
+                    key={details.id}
+                    plan={details}
+                    serviceId={serviceId}
+                    community={selectedCommunity}
+                  />
+                );
+              })}
 
-              const details = { ...baseDetails, price: plans[planName] };
-
-              return (
-                <PlanCard
-                  key={details.id}
-                  plan={details}
-                  serviceId={serviceId}
-                  community={selectedCommunity}
-                />
-              );
-            })}
           </div>
         </div>
       )}

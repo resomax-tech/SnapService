@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, UserCog, Users } from "lucide-react";
+import { Building2, UserCog, Users, BrushCleaning } from "lucide-react";
 
 export default function AdminDashboard() {
   const stats = [

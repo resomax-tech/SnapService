@@ -16,13 +16,14 @@ const subscriptionSchema = new mongoose.Schema({
     enum: ["2W_CLASSIC", "2W_DEEP", "4W_CLASSIC", "4W_DEEP"],
     required: true
   },
+  // ✅ Store as strings ("YYYY-MM-DD")
   startDate: {
-    type: Date,
+    type: String,
     required: true
   },
   bookedDates: [
     {
-      type: Date
+      type: String // Each one: "2025-10-20"
     }
   ],
   bathrooms: {
@@ -46,7 +47,9 @@ const subscriptionSchema = new mongoose.Schema({
     type: Number,
     required: true
   }
-
 }, { timestamps: true });
+
+// Indexing for efficiency
+subscriptionSchema.index({ community: 1, plan: 1, startDate: 1 });
 
 export default mongoose.models.Subscription || mongoose.model("Subscription", subscriptionSchema);

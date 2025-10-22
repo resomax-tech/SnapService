@@ -19,7 +19,7 @@ export const BookingCalendar = ({
 
     // Compute disabled days (Sundays, past, fully booked)
     const bookedDates =
-        availableDates.filter((d) => d.fullBooked).map((d) => new Date(d.date)) || [];
+        availableDates.filter((d) => d.fullBooked).map((d) => normalizeLocalDate(d.date)) || [];
 
     const disabledDays = [{ dayOfWeek: [0] }, { before: today }, ...bookedDates];
 
@@ -40,30 +40,35 @@ export const BookingCalendar = ({
             recurringDates.push(d);
         }
         setSelected(recurringDates);
-        onDatesSelected(recurringDates);       
+        onDatesSelected(recurringDates);
 
-        if (selectedDate > latestAvailable) {        
+        if (selectedDate > latestAvailable) {
             fetchDates(selectedDate)
         }
     };
 
     // Find slot info for each selected date
-    const getSlotInfo = (date) => {
-        const formatted = toDateKey(date)
-        const day = availableDates.find((d) => d.date === formatted);
+    const getSlotInfo = (day) => {
+        const formatted = toDateKey(day)
+        const matchedDay = availableDates.find((d) => d.date === formatted);
 
-        if (!day) return "No data";
-        if (day.fullBooked) return "Fully booked";
-        return `${day.available}/${day.total} slots available`;
+        if (!matchedDay) return "No data";
+        if (matchedDay.fullBooked) return "Fully booked";
+        return `${matchedDay.available}/${matchedDay.total} slots available`;
     };
 
 
 
-    const getSlotColor = (day) => {
-        if (day.fullBooked) return "text-red-500";
-        if (day.available <= 2) return "text-yellow-600";
+    const getSlotColor = (date) => {
+        const formatted = toDateKey(date);
+        const matchedDay = availableDates.find((d) => d.date === formatted);
+
+        if (!matchedDay) return "text-gray-400";
+        if (matchedDay.fullBooked) return "text-red-500";
+        if (matchedDay.available <= 3) return "text-yellow-600";
         return "text-green-600";
     };
+
 
 
     return (

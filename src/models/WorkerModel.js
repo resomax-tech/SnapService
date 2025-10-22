@@ -24,13 +24,19 @@ const WorkerSchema = new mongoose.Schema({
         enum: ["classic", "deep"],
         require: true
     },
-    maxJobs: {
+    maxBathrooms: {
         type: Number,
-        enum: [5, 7],
-        default: 5,
-        require: true
+        default: 7
+    },
+    active: {
+        type: Boolean,
+        default: true
+    },
+    lastAssignedDate: {
+        type: String
     }
 
 }, { timestamps: true });
 
+WorkerSchema.index({ workType: 1, communities: 1 });
 export default mongoose.models.Worker || mongoose.model("Worker", WorkerSchema)

@@ -16,11 +16,13 @@ export default function Step1({ nextStep }) {
       community: bookingData.community._id,
       plan: bookingData.plan.type || "classic",
       weeks: bookingData.plan.key,
-      startDate: normalizeLocalDate(date) || new Date()
+      startDate: toDateKey(date)
     }
     try {
-      
+
       const response = await axios.get('/api/availability', { params })
+      console.log(response.data);
+      
       const newData = response.data.formatted
       console.log("recieved: ", newData);
       setAvailableDates((prev) => {
@@ -38,16 +40,15 @@ export default function Step1({ nextStep }) {
   }
   useEffect(() => {
     if (bookingData?.community?._id && bookingData?.plan?.type) {
-      fetchDates();
+      fetchDates(new Date());
     }
   }, []);
 
 
-const handleDates = (dates) => {
-  const dateKeys = dates.map(toDateKey);
-  updateBooking({ dates: dateKeys });
-};
-
+  const handleDates = (dates) => {
+    const dateKeys = dates.map(toDateKey);
+    updateBooking({ dates: dateKeys });
+  };
 
 
 

@@ -2,35 +2,45 @@ import { NextResponse } from "next/server";
 import Subscription from "@/models/subscriptionModel";
 import Job from "@/models/JobModel";
 import dbConnect from "@/lib/connectDB";
-import { normalizeLocalDate } from "@/lib/normalizeDate";
+import { normalizeLocalDate, toDateKey } from "@/lib/normalizeDate";
 import { decryptToken } from "@/lib/auth";
+
+
+export async function GET(req) {
+    try {
+        await dbConnect();
+        const subscriptions = await Subscription.find({});
+        return NextResponse.json({ subscriptions });
+    } catch (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}
 
 export async function POST(req) {
     try {
         await dbConnect();
         const body = await req.json();
-        // Validate login token
         const token = req.cookies.get("access_token")?.value;
+
         if (!token) {
             return NextResponse.json({ loggedIn: false }, { status: 401 });
         }
-        
+
         const payload = await decryptToken(token);
-        body.user = payload.sub; 
-        
-        // console.log("updated :", body);
+        body.user = payload.sub;
+
         // Normalize dates before saving
-        if (!Array.isArray(body.bookedDates) || body.bookedDates.length === 0) {           
+        if (!Array.isArray(body.bookedDates) || body.bookedDates.length === 0) {
             return NextResponse.json({ error: "No booking dates provided" }, { status: 400 });
         }
 
         // Convert "YYYY-MM-DD" → Date objects
-        const bookedDates = body.bookedDates.map((d) => normalizeLocalDate(d));
+        const bookedDates = body.bookedDates.map(toDateKey);
 
         //  Create subscription
         const subscription = await Subscription.create({
             ...body,
-            bookedDates, 
+            bookedDates,
         });
 
         // Generate Jobs (await properly)
@@ -50,36 +60,35 @@ export async function POST(req) {
     }
 }
 
-export async function GET(req) {
-    try {
-        await dbConnect();
-        const subscriptions = await Subscription.find({});
-        return NextResponse.json({ subscriptions });
-    } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-}
 
 const generateJobs = async (subscription) => {
     try {
-        const jobType = subscription.plan?.key?.toLowerCase().includes("classic")
+        console.log("subscription: ", subscription);
+        
+        const jobType = subscription.plan?.toLowerCase().includes("classic")
             ? "classic"
             : "deep";
 
-        console.log("subscription: ", subscription);
+        // console.log("subscription: ", subscription);
+        // console.log(jobType);
         
 
+
         await Promise.all(
-            subscription.bookedDates.map((d) =>
-                // console.log("d:",normalizeLocalDate(d))
-                
+            subscription.bookedDates.map((d) => {
+
+                const normalized = normalizeLocalDate(d)
+                const dateKey = toDateKey(d)
+
                 Job.create({
                     subscription: subscription._id,
                     community: subscription.community,
-                    date: normalizeLocalDate(d),
+                    date: normalized,
+                    dateKey,
                     workType: jobType,
                     bathrooms: subscription.bathrooms,
                 })
+            }
             )
         );
 

@@ -7,11 +7,11 @@ import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
 
 const serviceGroups = {
-  Classic: {
+  classic: {
     type: "Classic Cleaning",
     images: ["/basic1.png", "/basic2.png", "/basic3.webp"],
   },
-  Deep: {
+  deep: {
     type: "Deep Cleaning",
     images: ["/deep1.png", "/deep2.png", "/deep3.png"],
   },
@@ -28,6 +28,8 @@ const reviews = [
 ];
 
 export default function ViewMoreModal({ serviceType, onClose }) {
+    console.log(serviceType);
+    
     const service = serviceGroups[serviceType];
     const [openFAQ, setOpenFAQ] = useState(null);
 
