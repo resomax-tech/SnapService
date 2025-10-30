@@ -14,6 +14,8 @@ const sidebarItems = [
   { name: "Workers", path: "/admin/workers", icon: <UserCog size={18} /> },
   { name: "Transactions", path: "/admin/transactions", icon: <CreditCard size={18} /> },
   { name: "Customers", path: "/admin/customers", icon: <Users size={18} /> },
+  { name: "Transactions", path: "/admin/transactions", icon: <ArrowLeftRight size={18} /> },
+  {name:"Generate Sheets",path:"/admin/generatesheets",icon:<FileSpreadsheet size={18}/>}
 ];
 
 export default function Sidebar() {

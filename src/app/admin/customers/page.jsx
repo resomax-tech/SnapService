@@ -300,7 +300,8 @@ export default function CustomersPage() {
                   name="communityId"
                   value={customer.communityId}
                   onChange={handleCustomerChange}
-                  className="w-full border rounded-md p-2"
+                  className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-0 focus:border-gray-400"
+
                   required
                 >
                   <option value="" >Select community</option>

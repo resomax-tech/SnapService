@@ -369,7 +369,7 @@ export default function WorkersPage() {
                 <select
                   value={worker.communities[0] || ""}
                   onChange={(e) => handleCommunityChange(0, e.target.value)}
-                  className="w-full border rounded-md p-2"
+                  className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-0 focus:border-gray-400"
                   required
                 >
                   <option value="">Select community</option>
@@ -387,7 +387,7 @@ export default function WorkersPage() {
                 <select
                   value={worker.communities[1] || ""}
                   onChange={(e) => handleCommunityChange(1, e.target.value)}
-                  className="w-full border rounded-md p-2"
+                  className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-0 focus:border-gray-400"
                 >
                   <option value="">Select community</option>
                   {communities.map((c) => (
@@ -405,7 +405,8 @@ export default function WorkersPage() {
                   name="workType"
                   value={worker.workType}
                   onChange={handleWorkerChange}
-                  className="w-full border rounded-md p-2"
+                  className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-0 focus:border-gray-400"
+
                   required
                 >
                   <option value="classic">Classic</option>
