@@ -23,6 +23,12 @@ button {
 
 select {
   cursor: pointer !important;
+  border: 1px solid #e2e2e2 !important;
+  outline: none !important;
+}
+
+option {
+  border: 1px solid #e2e2e2 !important;
 }
 
 .btn {
@@ -74,7 +80,6 @@ textarea:focus {
 .animate-slide-up {
   animation: slideUp 0.4s ease-out forwards;
 }
-
 
 /* === React DayPicker Custom Styles (v9+) === */
 .custom-calendar {
@@ -155,7 +160,7 @@ textarea:focus {
   cursor: not-allowed;
 }
 
-.custom-calendar .rdp-chevron{
+.custom-calendar .rdp-chevron {
   fill: #dba144;
 }
 

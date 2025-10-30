@@ -1,12 +1,15 @@
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import { useState, useEffect } from "react";
-import "../../src/app/globals.css";
+import { normalizeLocalDate, toDateKey } from "@/lib/normalizeDate";
 
 export const BookingCalendar = ({
     planType = "",
+    bathrooms = 1,
     onDatesSelected = () => { },
     availableDates = [],
+    onInvalidSelection = () => { },
+    fetchDates
 }) => {
     const [selected, setSelected] = useState([]);
     const today = new Date();
@@ -16,30 +19,46 @@ export const BookingCalendar = ({
         setSelected([]);
     }, [planType]);
 
-    // 🧩 Compute disabled days (Sundays, past, fully booked)
+    // Compute disabled days (Sundays, past, fully booked)
     const bookedDates =
-        availableDates.filter((d) => d.fullBooked).map((d) => new Date(d.date)) || [];
+        availableDates.filter((d) => d.fullBooked).map((d) => normalizeLocalDate(d.date)) || [];
 
     const disabledDays = [{ dayOfWeek: [0] }, { before: today }, ...bookedDates];
 
-    // 🧩 Handle selection logic
+    // Handle selection logic
     const handleDateClick = (date) => {
-        const selectedDate = new Date(date)
-        const latestAvailable = new Date(availableDates.at(-1)?.date);
+        const selectedDate = normalizeLocalDate(date)
+        const latestAvailable = normalizeLocalDate(availableDates.at(-15)?.date);
 
         if (!date) return;
         const plan = (planType || "").toUpperCase();
         const gap = plan.includes("4W") ? 7 : 14
         const occurrences = plan.includes("4W") ? 4 : 2
 
-        const recurringDates = [];
+        const proposed = [];
+
         for (let i = 0; i < occurrences; i++) {
-            const d = new Date(date);
+            const d = normalizeLocalDate(date)
             d.setDate(d.getDate() + i * gap);
-            recurringDates.push(d);
+            proposed.push(d);
         }
-        setSelected(recurringDates);
-        onDatesSelected(recurringDates);
+
+        for (const d of proposed) {
+            const dk = toDateKey(d)
+            const getDateInfo = availableDates.find((x) => x.date === dk)
+
+            if (!getDateInfo || getDateInfo.available < bathrooms) {
+                onInvalidSelection(true)
+                setSelected([]);
+                onDatesSelected([]);
+                return;
+            }
+        }
+
+        onInvalidSelection(false)
+        setSelected(proposed)
+        onDatesSelected(proposed)
+
 
         if (selectedDate > latestAvailable) {
             fetchDates(selectedDate)
@@ -47,22 +66,27 @@ export const BookingCalendar = ({
     };
 
     // Find slot info for each selected date
-    const getSlotInfo = (date) => {
-        const formatted = date.toLocaleDateString("en-CA"); // outputs "YYYY-MM-DD" in local timezone
-        const day = availableDates.find((d) => d.date === formatted);
+    const getSlotInfo = (day) => {
+        const formatted = toDateKey(day)
+        const matchedDay = availableDates.find((d) => d.date === formatted);
 
-        if (!day) return "No data";
-        if (day.fullBooked) return "Fully booked";
-        return `${day.available}/${day.total} slots available`;
+        if (!matchedDay) return "No data";
+        if (matchedDay.fullBooked) return "Fully booked";
+        return `${matchedDay.available}/${matchedDay.total} slots available`;
     };
 
 
 
-    const getSlotColor = (day) => {
-        if (day.fullBooked) return "text-red-500";
-        if (day.available <= 2) return "text-yellow-600";
+    const getSlotColor = (date) => {
+        const formatted = toDateKey(date);
+        const matchedDay = availableDates.find((d) => d.date === formatted);
+
+        if (!matchedDay) return "text-gray-400";
+        if (matchedDay.fullBooked) return "text-red-500";
+        if (matchedDay.available <= 3) return "text-yellow-600";
         return "text-green-600";
     };
+
 
 
     return (
@@ -86,7 +110,7 @@ export const BookingCalendar = ({
                             key={i}
                             className="flex justify-between items-center px-4 py-2 border border-gray-500 rounded-md bg-gray-50 text-sm"
                         >
-                            <span>📅 {d.toLocaleDateString()}</span>
+                            <span>📅 {toDateKey(d)}</span>
                             <span className={`font-medium ${getSlotColor(d)}`}>
                                 {getSlotInfo(d)}
                             </span>

@@ -2,12 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { Edit, Trash2, Plus, Users } from "lucide-react";
+import axios from "axios";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
-  const [communities, setCommunities] = useState([]);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
+  const [loading, setLoading] = useState(false)
+
   const [customer, setCustomer] = useState({
     name: "",
     email: "",
@@ -15,34 +20,25 @@ export default function CustomersPage() {
     communityId: "",
     flat: "",
   });
-  const [searchCustomer, setSearchCustomer] = useState("");
 
-  /** Mock Data Load */
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true)
+      const response = await axios.get('/api/auth/admin/customer', { withCredentials: true })
+      setCustomers(response.data.users)
+      setLoading(false)
+    } catch (error) {
+      console.log("error: ", error.message);
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
-    setCommunities([
-      { id: 1, name: "Green Valley" },
-      { id: 2, name: "Blue Hills" },
-    ]);
+    fetchCustomers()
+  }, [])
 
-    setCustomers([
-      {
-        id: 1,
-        name: "Amit Kumar",
-        email: "amit@example.com",
-        mobile: "9876543210",
-        communityId: 1,
-        flat: "B-203",
-      },
-      {
-        id: 2,
-        name: "Priya Sharma",
-        email: "priya@example.com",
-        mobile: "9123456780",
-        communityId: 2,
-        flat: "A-105",
-      },
-    ]);
-  }, []);
+  const [searchCustomer, setSearchCustomer] = useState("");
 
   /** Customer Handlers */
   const handleCustomerChange = (e) => {
@@ -83,14 +79,78 @@ export default function CustomersPage() {
       c.mobile.includes(searchCustomer)
   );
 
-  const getCommunityName = (id) => communities.find((c) => c.id === Number(id))?.name || "";
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
+
+    doc.setFontSize(16);
+    doc.text("List of Customers", 14, 15);
+
+    const generatedText = `Generated on: ${new Date().toLocaleDateString()}`;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const textWidth = doc.getTextWidth(generatedText);
+    doc.setFontSize(11);
+    doc.text(generatedText, pageWidth - textWidth - 14, 15);
+
+    const headers = [
+      ["S.No", "Name", "Email", "Mobile",],
+    ];
+
+    const rows = filteredCustomers.map((c, i) => [
+      i + 1,
+      c.name,
+      c.email,
+      c.mobile,
+    ]);
+
+    autoTable(doc, {
+      startY: 25,
+      head: headers,
+      body: rows,
+      theme: "grid",
+      styles: { fontSize: 10, cellPadding: 3, halign: "center" },
+    });
+
+    doc.save(`Customers_sheet_${new Date().toLocaleDateString()}.pdf`);
+  };
+
+
+  const exportToExcel = () => {
+    const headers = [
+      ["S.No", "Name", "Email", "Mobile"],
+    ];
+
+    const rows = filteredCustomers.map((c, i) => [
+      i + 1,
+      c.name,
+      c.email,
+      c.mobile,
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Customers Sheet");
+
+    // Optional: column widths
+    ws['!cols'] = [
+      { wch: 5 },
+      { wch: 20 },
+      { wch: 15 },
+    ];
+
+    XLSX.writeFile(wb, `Customers_sheet.xlsx`);
+  };
+
+  // const getCommunityName = (id) => communities.find((c) => c.id === Number(id))?.name || "";
 
   return (
     <main className="flex-1 p-6 overflow-y-auto">
       <div className="bg-white p-6 rounded-xl shadow">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Users size={18} />
+          <h2 className="text-3xl font-bold text-gray-700 flex items-center gap-2">
             Customers
           </h2>
           <button
@@ -99,62 +159,84 @@ export default function CustomersPage() {
               setCustomer({ name: "", email: "", mobile: "", communityId: "", flat: "" });
               setShowCustomerModal(true);
             }}
-            className="bg-gray-700 text-white p-2 rounded-md hover:bg-gray-500 flex items-center gap-2"
+            className="bg-gray-700 hidden text-white p-2 rounded-md hover:bg-gray-500 flex items-center gap-2"
           >
             <Plus size={16} />
             Add Customer
           </button>
         </div>
 
-        <input
-          type="text"
-          placeholder="Search customers..."
-          value={searchCustomer}
-          onChange={(e) => setSearchCustomer(e.target.value)}
-          className="w-full border rounded-md p-2 mb-4"
-        />
+        <div className="flex items-center justify-between my-10">
+          <input
+            type="text"
+            placeholder="Search customers..."
+            value={searchCustomer}
+            onChange={(e) => setSearchCustomer(e.target.value)}
+            className="w-[60%] border rounded-md p-3"
+          />
 
-        {filteredCustomers.length > 0 ? (
-          <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
-            <thead className="bg-gray-100 text-gray-700">
-              <tr>
-                <th className="p-2 text-left">Name</th>
-                <th className="p-2 text-left">Email</th>
-                <th className="p-2 text-left">Mobile</th>
-                <th className="p-2 text-left">Community</th>
-                <th className="p-2 text-left">Flat</th>
-                <th className="p-2 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCustomers.map((c, idx) => (
-                <tr key={c.id} className={idx % 2 === 0 ? "" : "bg-gray-50"}>
-                  <td className="p-2">{c.name}</td>
-                  <td className="p-2">{c.email}</td>
-                  <td className="p-2">{c.mobile}</td>
-                  <td className="p-2">{getCommunityName(c.communityId)}</td>
-                  <td className="p-2">{c.flat}</td>
-                  <td className="p-2 flex gap-2">
-                    <button
-                      onClick={() => handleCustomerEdit(c)}
-                      className="text-white bg-[#6e8cfb] p-2 rounded-md"
-                    >
-                      <Edit size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleCustomerDelete(c.id)}
-                      className="text-white bg-[#e11c48] p-2 rounded-md"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
+          <div className="flex items-center justify-end">
+            <div className="flex items-center justify-end gap-4 border border-[#e2e2e2] rounded-md px-2">
+              <p className="font-medium text-lg">Download:</p>
+              <div className="flex space-x-4  p-2 ">
+                <img src="/icons/pdf.svg" className="h-8 transition-all duration-300 cursor-pointer hover:scale-110" onClick={handleDownloadPDF} />
+                <img src="/icons/excel.svg" className="h-8 transition-all duration-300 cursor-pointer hover:scale-110" onClick={exportToExcel} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="max-w-7xl flex items-start justify-center min-h-[200px]">
+            <div className="flex flex-row gap-2 mt-10">
+              <div className="w-4 h-4 rounded-full bg-[#3D8D7A] animate-bounce"></div>
+              <div className="w-4 h-4 rounded-full bg-[#3D8D7A] animate-bounce [animation-delay:-.3s]"></div>
+              <div className="w-4 h-4 rounded-full bg-[#3D8D7A] animate-bounce [animation-delay:-.5s]"></div>
+            </div>
+          </div>
+        ) : customers.length === 0 ? (
           <p className="text-gray-500 text-sm">No customers found.</p>
-        )}
+        ) : (<table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
+          <thead className="bg-gray-100 text-gray-700">
+            <tr>
+              <th className="p-2 text-left">S.No</th>
+              <th className="p-2 text-left">Name</th>
+              <th className="p-2 text-left">Email</th>
+              <th className="p-2 text-left">Mobile</th>
+              {/* <th className="p-2 text-left">Community</th>
+                <th className="p-2 text-left">Flat</th> */}
+              <th className="p-2 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredCustomers.map((c, idx) => (
+              <tr key={c._id} className={idx % 2 === 0 ? "" : "bg-gray-50"}>
+                <td className="p-2">{idx + 1}</td>
+                <td className="p-2">{c.name}</td>
+                <td className="p-2">{c.email}</td>
+                <td className="p-2">{c.mobile}</td>
+                {/* <td className="p-2">{getCommunityName(c.communityId)}</td>
+                  <td className="p-2">{c.flat}</td> */}
+                <td className="p-2 flex gap-2">
+                  <button
+                    onClick={() => handleCustomerEdit(c)}
+                    className="text-white bg-[#6e8cfb] p-2 rounded-md"
+                  >
+                    <Edit size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleCustomerDelete(c.id)}
+                    className="text-white bg-[#e11c48] p-2 rounded-md"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        )
+        }
       </div>
 
       {/* Customer Modal */}

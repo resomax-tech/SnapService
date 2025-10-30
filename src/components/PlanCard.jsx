@@ -94,7 +94,6 @@ export default function PlanCard({ plan, serviceId, community }) {
           </div>
         </div>
       </div>
-
       {showModal && (
         <ViewMoreModal serviceType={plan.type} onClose={() => setShowModal(false)} />
       )}

@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 const JobSchema = new mongoose.Schema({
@@ -26,6 +25,10 @@ const JobSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
+    dateKey: {
+        type: String,
+        required: true
+    },
     workType: {
         type: String,
         enum: ["classic", "deep"],
@@ -38,5 +41,6 @@ const JobSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+JobSchema.index({ community: 1, workType: 1, dateKey: 1 });
 
 export default mongoose.models.Job || mongoose.model("Job", JobSchema)

@@ -1,11 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-
-export default function Step3({ formData }) {
+import { useBooking } from "@/lib/bookingContext";
+export default function Step3() {
   const router = useRouter();
-
+  const { resetBooking } = useBooking()
   const handleContinue = () => {
+    resetBooking()
     router.push("/"); // navigate to home page
   };
 
@@ -23,7 +24,7 @@ export default function Step3({ formData }) {
       {/* Heading */}
       <h2 className="text-2xl font-bold mb-2">Thank You!</h2>
       <p className="text-gray-600 mb-6">
-        Your booking has been successfully completed 
+        Your booking has been successfully completed
       </p>
 
       {/* Button */}

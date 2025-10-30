@@ -16,37 +16,40 @@ export default function CommunityPage() {
   useEffect(() => {
     const fetchCommunities = async () => {
       try {
-        const response = await axios.get("/api/community/");
-        setCommunities(response.data.communities);
-      } catch (error) {}
+        const response = await axios.get('/api/community/')
+        // console.log("communities: ", response.data.communities);
+
+        setCommunities(response.data.communities)
+      } catch (error) {
+      }
     };
     fetchCommunities();
   }, []);
 
   const PLAN_DETAILS = {
-    twoweekclassic: {
-      id: "classic-4w",
+    fourweekclassic: {
+      id: "4W_CLASSIC",
       title: "Classic Cleaning",
       type: "classic",
       weeks: "4 Weeks/Month",
       price: 0,
     },
-    twoweekdeep: {
-      id: "deep-4w",
+    fourweekdeep: {
+      id: "4W_DEEP",
       title: "Deep Cleaning",
       type: "deep",
       weeks: "4 Weeks/Month",
       price: 0,
     },
-    fourweekclassic: {
-      id: "classic-2w",
+    twoweekclassic: {
+      id: "2W_CLASSIC",
       title: "Classic Cleaning",
       type: "classic",
       weeks: "2 Weeks/Month",
       price: 0,
     },
-    fourweekdeep: {
-      id: "deep-2w",
+    twoweekdeep: {
+      id: "2W_DEEP",
       title: "Deep Cleaning",
       type: "deep",
       weeks: "2 Weeks/Month",
@@ -132,24 +135,30 @@ export default function CommunityPage() {
           <h2 className="text-xl font-semibold mb-4">
             Available Plans in {selectedCommunity.name}
           </h2>
-
-          <div className="grid md:grid-cols-3 gap-4">
-            {Object.entries(plans).map(([planName]) => {
-              const baseDetails = PLAN_DETAILS[planName];
-              if (!baseDetails) return null;
-
-              const details = { ...baseDetails, price: plans[planName] };
-
-              return (
-                <motion.div key={details.id} variants={cardVariants}>
+          <div className="grid md:grid-cols-3  gap-2">
+            {Object.entries(plans)
+              // ✅ Sort so 4-week plans come first
+              .sort(([a], [b]) => {
+                const isA4W = a.toLowerCase().includes("fourweek");
+                const isB4W = b.toLowerCase().includes("fourweek");
+                if (isA4W && !isB4W) return -1;  // a before b
+                if (!isA4W && isB4W) return 1;   // b after a
+                return 0;                        // same group, keep order
+              })
+              .map(([planName]) => {
+                const baseDetails = PLAN_DETAILS[planName];
+                if (!baseDetails) return null;
+                const details = { ...baseDetails, price: plans[planName] };
+                return (
                   <PlanCard
+                    key={details.id}
                     plan={details}
                     serviceId={serviceId}
                     community={selectedCommunity}
                   />
-                </motion.div>
-              );
-            })}
+                );
+              })}
+
           </div>
         </motion.div>
       )}

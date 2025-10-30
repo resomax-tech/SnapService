@@ -28,6 +28,8 @@ const reviews = [
 ];
 
 export default function ViewMoreModal({ serviceType, onClose }) {
+    console.log(serviceType);
+    
     const service = serviceGroups[serviceType];
     const [openFAQ, setOpenFAQ] = useState(null);
 

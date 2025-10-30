@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    allowedDevOrigins:[]
+    allowedDevOrigins: ["*"],
 };
 
 export default nextConfig;
+
+
