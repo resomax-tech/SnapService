@@ -5,7 +5,7 @@ import axios from "axios";
 import { Edit, Trash2, Plus } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 export default function CommunitiesPage() {
   const [communities, setCommunities] = useState([]);
@@ -123,36 +123,76 @@ export default function CommunitiesPage() {
   };
 
 
-  const exportToExcel = () => {
-    const headers = [
-      ["S.No", "Community Name", "2 Week Classic", "2 Week Deep", "4 Week Classic", "4 Week Deep"],
-    ];
+  const exportToExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Communities Sheet");
 
-    const rows = filteredCommunities.map((c, i) => [
-      i + 1,
-      c.name,
-      c.plans.twoweekclassic,
-      c.plans.twoweekdeep,
-      c.plans.fourweekclassic,
-      c.plans.fourweekdeep,
+    // Define headers
+    worksheet.addRow([
+      "S.No",
+      "Community Name",
+      "2 Week Classic",
+      "2 Week Deep",
+      "4 Week Classic",
+      "4 Week Deep",
     ]);
 
-    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Communities Sheet");
+    // Add data rows
+    filteredCommunities.forEach((c, i) => {
+      worksheet.addRow([
+        i + 1,
+        c.name,
+        c.plans.twoweekclassic,
+        c.plans.twoweekdeep,
+        c.plans.fourweekclassic,
+        c.plans.fourweekdeep,
+      ]);
+    });
 
-    // Optional: column widths
-    ws['!cols'] = [
-      { wch: 5 },  
-      { wch: 20 }, 
-      { wch: 15 }, 
-      { wch: 20 }, 
-      { wch: 15 }, 
-      { wch: 10 }, 
+    // Style header row
+    const headerRow = worksheet.getRow(1);
+    headerRow.font = { bold: true };
+    headerRow.alignment = { horizontal: "center" };
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFD9EAD3" }, // light green shade
+      };
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+    });
+
+    // Set column widths
+    worksheet.columns = [
+      { width: 5 },
+      { width: 25 },
+      { width: 15 },
+      { width: 15 },
+      { width: 15 },
+      { width: 15 },
     ];
 
-    XLSX.writeFile(wb, `communities_sheet.xlsx`);
+    // Generate Excel file
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type:
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    // Download in browser
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `communities_sheet.xlsx`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
+
 
 
   return (
@@ -178,28 +218,28 @@ export default function CommunitiesPage() {
           </button>
         </div>
 
-          <div className="flex items-center justify-between my-10">
-            <input
-          type="text"
-          placeholder="Search communities..."
-          value={searchCommunity}
-          onChange={(e) => setSearchCommunity(e.target.value)}
-          className="w-[60%] border rounded-md p-2"
-        />
+        <div className="flex items-center justify-between my-10">
+          <input
+            type="text"
+            placeholder="Search communities..."
+            value={searchCommunity}
+            onChange={(e) => setSearchCommunity(e.target.value)}
+            className="w-[60%] border rounded-md p-2"
+          />
 
-        <div className="flex items-center justify-end">
-          <div className="flex items-center justify-end gap-4 border border-[#e2e2e2] rounded-md px-2">
-            <p className="font-medium text-lg">Download:</p>
-            <div className="flex space-x-4  p-2 ">
-              <img src="/icons/pdf.svg" className="h-8 transition-all duration-300 cursor-pointer hover:scale-110" onClick={handleDownloadPDF} />
-              <img src="/icons/excel.svg" className="h-8 transition-all duration-300 cursor-pointer hover:scale-110" onClick={exportToExcel} />
+          <div className="flex items-center justify-end">
+            <div className="flex items-center justify-end gap-4 border border-[#e2e2e2] rounded-md px-2">
+              <p className="font-medium text-lg">Download:</p>
+              <div className="flex space-x-4  p-2 ">
+                <img src="/icons/pdf.svg" className="h-8 transition-all duration-300 cursor-pointer hover:scale-110" onClick={handleDownloadPDF} />
+                <img src="/icons/excel.svg" className="h-8 transition-all duration-300 cursor-pointer hover:scale-110" onClick={exportToExcel} />
+              </div>
             </div>
           </div>
+
+
         </div>
 
-
-          </div>
-        
         {loading ? <div className="max-w-7xl flex items-start justify-center min-h-screen">
           <div className="flex flex-row gap-2 mt-10">
             <div className="w-4 h-4 rounded-full bg-[#3D8D7A] animate-bounce"></div>
