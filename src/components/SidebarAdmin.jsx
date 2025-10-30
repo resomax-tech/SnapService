@@ -1,18 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutDashboard, Building2, UserCog, Users, LogOut, ArrowLeftRight, FileSpreadsheet } from "lucide-react";
+import { LayoutDashboard, FileSpreadsheet, FileBox,Building2, UserCog, Users, LogOut, CreditCard } from "lucide-react";
+import { usePathname } from "next/navigation";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const sidebarItems = [
   { name: "Dashboard", path: "/admin", icon: <LayoutDashboard size={18} /> },
+  { name: "Generate Jobsheet", path: "/admin/jobs/generate", icon: <FileSpreadsheet size={18} /> },
+  { name: "Update Jobsheet", path: "/admin/jobs/update", icon: <FileBox size={18} /> },
   { name: "Communities", path: "/admin/communities", icon: <Building2 size={18} /> },
   { name: "Workers", path: "/admin/workers", icon: <UserCog size={18} /> },
+  { name: "Transactions", path: "/admin/transactions", icon: <CreditCard size={18} /> },
   { name: "Customers", path: "/admin/customers", icon: <Users size={18} /> },
   { name: "Transactions", path: "/admin/transactions", icon: <ArrowLeftRight size={18} /> },
   {name:"Generate Sheets",path:"/admin/generatesheets",icon:<FileSpreadsheet size={18}/>}
 ];
 
 export default function Sidebar() {
+  const pathname = usePathname()
+  const router = useRouter()
+  const handleLogout = async ()=>{
+    const response = await axios.post('/api/auth/logout')
+    alert(response.data.msg)
+    router.push("/admin/login")
+  }
+
   return (
     <aside className="w-64 bg-white text-gray-700 flex flex-col shadow">
       {/* Logo */}
@@ -22,22 +36,28 @@ export default function Sidebar() {
 
       {/* Nav Links */}
       <nav className="flex-1 p-4 space-y-2">
-        {sidebarItems.map((item) => (
-          <Link
-            key={item.name}
-            href={item.path}
-            className="flex items-center gap-2 p-2 rounded-md hover:bg-gray-700 hover:text-white"
-          >
-            {item.icon}
-            {item.name}
-          </Link>
-        ))}
+        {sidebarItems.map((item) => {
+          const isActive = pathname == item.path || item.path !== '/admin' && pathname.startsWith(item.path)
+          return (
+            <Link
+              key={item.name}
+              href={item.path}
+              className={`flex items-center gap-2 p-2 rounded-md transition-colors ${isActive
+                ? "bg-gray-700 text-white font-medium"
+                : "hover:bg-gray-100 text-gray-700"
+                }`}
+            >
+              {item.icon}
+              {item.name}
+            </Link>
+          )
+        })}
       </nav>
 
       {/* Logout Button */}
       <div className="py-4 px-6 mb-10 flex items-center">
         <button
-          onClick={() => alert("Logging out...")}
+          onClick={handleLogout}
           className="flex items-center justify-center gap-2 p-2 w-full rounded-md bg-[#ED3F27] text-white font-medium"
         >
           <LogOut size={18} />

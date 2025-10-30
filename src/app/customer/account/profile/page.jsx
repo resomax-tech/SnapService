@@ -13,7 +13,7 @@ import { useAuth } from "@/lib/authContext";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, loading } = useAuth()
+  const { user, loading, setIsLoggedIn, refreshUser } = useAuth()
   const { resetBooking } = useBooking()
 
   const logout = async () => {
@@ -23,6 +23,7 @@ export default function ProfilePage() {
       resetBooking()
       setIsLoggedIn(false)
       setUser(null)
+      refreshUser()
       router.push("/")
     } catch (error) {
       console.log("Error", error.message);

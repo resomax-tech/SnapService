@@ -40,7 +40,7 @@ export function BookingProvider({ children }) {
 
     const updateBooking = (updates) => {
         setBookingData((prev) => ({ ...prev, ...updates }))
-        console.log(bookingData);  // remove for testing 
+        // console.log(bookingData);  // remove for testing 
     }
 
     const resetBooking = () => {
@@ -51,7 +51,6 @@ export function BookingProvider({ children }) {
             dates: [],
             bathrooms: null,
             flat: null,
-            user: null
         });
         localStorage.removeItem("bookingData");
     };

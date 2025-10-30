@@ -2,11 +2,15 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Edit, Trash2, Plus, Building2 } from "lucide-react";
+import { Edit, Trash2, Plus } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 export default function CommunitiesPage() {
   const [communities, setCommunities] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false)
   const [editingCommunity, setEditingCommunity] = useState(null);
   const [community, setCommunity] = useState({
     name: "",
@@ -16,10 +20,13 @@ export default function CommunitiesPage() {
 
   const fetchCommunities = async () => {
     try {
+      setLoading(true)
       const response = await axios.get('/api/community')
       setCommunities(response.data.communities)
     } catch (error) {
       console.log("error while fetching communities");
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -74,6 +81,80 @@ export default function CommunitiesPage() {
     c.name.toLowerCase().includes(searchCommunity.toLowerCase())
   );
 
+
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
+
+    doc.setFontSize(16);
+    doc.text("List of Communities Sheet", 14, 15);
+
+    const generatedText = `Generated on: ${new Date().toLocaleDateString()}`;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const textWidth = doc.getTextWidth(generatedText);
+    doc.setFontSize(11);
+    doc.text(generatedText, pageWidth - textWidth - 14, 15);
+
+    const headers = [
+      ["S.No", "Community Name", "2 Week Classic", "2 Week Deep", "4 Week Classic", "4 Week Deep"],
+    ];
+
+    const rows = filteredCommunities.map((c, i) => [
+      i + 1,
+      c.name,
+      c.plans.twoweekclassic,
+      c.plans.twoweekdeep,
+      c.plans.fourweekclassic,
+      c.plans.fourweekdeep,
+    ]);
+
+    autoTable(doc, {
+      startY: 25,
+      head: headers,
+      body: rows,
+      theme: "grid",
+      styles: { fontSize: 10, cellPadding: 3, halign: "center" },
+    });
+
+    doc.save(`communities_sheet_${new Date().toLocaleDateString()}.pdf`);
+  };
+
+
+  const exportToExcel = () => {
+    const headers = [
+      ["S.No", "Community Name", "2 Week Classic", "2 Week Deep", "4 Week Classic", "4 Week Deep"],
+    ];
+
+    const rows = filteredCommunities.map((c, i) => [
+      i + 1,
+      c.name,
+      c.plans.twoweekclassic,
+      c.plans.twoweekdeep,
+      c.plans.fourweekclassic,
+      c.plans.fourweekdeep,
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Communities Sheet");
+
+    // Optional: column widths
+    ws['!cols'] = [
+      { wch: 5 },  
+      { wch: 20 }, 
+      { wch: 15 }, 
+      { wch: 20 }, 
+      { wch: 15 }, 
+      { wch: 10 }, 
+    ];
+
+    XLSX.writeFile(wb, `communities_sheet.xlsx`);
+  };
+
+
   return (
     <main className="flex-1 p-6 overflow-y-auto">
       <div className="bg-white p-6 rounded-xl shadow">
@@ -97,56 +178,79 @@ export default function CommunitiesPage() {
           </button>
         </div>
 
-        <input
+          <div className="flex items-center justify-between my-10">
+            <input
           type="text"
           placeholder="Search communities..."
           value={searchCommunity}
           onChange={(e) => setSearchCommunity(e.target.value)}
-          className="w-full border rounded-md p-2 mb-4"
+          className="w-[60%] border rounded-md p-2"
         />
 
-        {filteredCommunities.length > 0 ? (
-          <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
-            <thead className="bg-gray-100 text-gray-700">
-              <tr>
-                <th className="p-2 text-left">Community Name</th>
-                <th className="p-2 text-left">2 Week Classic</th>
-                <th className="p-2 text-left">2 Week Deep</th>
-                <th className="p-2 text-left">4 Week Classic</th>
-                <th className="p-2 text-left">4 Week Deep</th>
-                <th className="p-2 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCommunities.map((c, idx) => (
-                <tr key={c._id} className={idx % 2 === 0 ? "" : "bg-gray-50"}>
-                  <td className="p-2">{c.name}</td>
-                  <td className="p-2">Rs.{c.plans?.twoweekclassic || "NA"}</td>
-                  <td className="p-2">Rs.{c.plans?.twoweekdeep || "NA"}</td>
-                  <td className="p-2">Rs.{c.plans?.fourweekclassic || "NA"}</td>
-                  <td className="p-2">Rs.{c.plans?.fourweekdeep || "NA"}</td>
-                  <td className="p-2 flex gap-2">
-                    <button
-                      onClick={() => handleCommunityEdit(c)}
-                      className="text-white p-2 rounded-md bg-[#6e8cfb]"
-                    >
-                      <Edit size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleCommunityDelete(c._id)}
-                      className="text-white p-2 rounded-md bg-[#e11c48]"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
+        <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end gap-4 border border-[#e2e2e2] rounded-md px-2">
+            <p className="font-medium text-lg">Download:</p>
+            <div className="flex space-x-4  p-2 ">
+              <img src="/icons/pdf.svg" className="h-8 transition-all duration-300 cursor-pointer hover:scale-110" onClick={handleDownloadPDF} />
+              <img src="/icons/excel.svg" className="h-8 transition-all duration-300 cursor-pointer hover:scale-110" onClick={exportToExcel} />
+            </div>
+          </div>
+        </div>
+
+
+          </div>
+        
+        {loading ? <div className="max-w-7xl flex items-start justify-center min-h-screen">
+          <div className="flex flex-row gap-2 mt-10">
+            <div className="w-4 h-4 rounded-full bg-[#3D8D7A] animate-bounce"></div>
+            <div className="w-4 h-4 rounded-full bg-[#3D8D7A] animate-bounce [animation-delay:-.3s]"></div>
+            <div className="w-4 h-4 rounded-full bg-[#3D8D7A] animate-bounce [animation-delay:-.5s]"></div>
+          </div>
+        </div> :
+          filteredCommunities.length > 0 ? (
+            <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden mt-5">
+              <thead className="bg-gray-100 text-gray-700">
+                <tr>
+                  <th className="p-2 text-left">Community Name</th>
+                  <th className="p-2 text-left">2 Week Classic</th>
+                  <th className="p-2 text-left">2 Week Deep</th>
+                  <th className="p-2 text-left">4 Week Classic</th>
+                  <th className="p-2 text-left">4 Week Deep</th>
+                  <th className="p-2 text-left">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p className="text-gray-500 text-sm">No communities found.</p>
-        )}
+              </thead>
+              <tbody>
+                {filteredCommunities.map((c, idx) => (
+                  <tr key={c._id} className={idx % 2 === 0 ? "" : "bg-gray-50"}>
+                    <td className="p-2">{c.name}</td>
+                    <td className="p-2">Rs.{c.plans?.twoweekclassic || "NA"}</td>
+                    <td className="p-2">Rs.{c.plans?.twoweekdeep || "NA"}</td>
+                    <td className="p-2">Rs.{c.plans?.fourweekclassic || "NA"}</td>
+                    <td className="p-2">Rs.{c.plans?.fourweekdeep || "NA"}</td>
+                    <td className="p-2 flex gap-2">
+                      <button
+                        onClick={() => handleCommunityEdit(c)}
+                        className="text-white p-2 rounded-md bg-[#6e8cfb]"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleCommunityDelete(c._id)}
+                        className="text-white p-2 rounded-md bg-[#e11c48]"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-gray-500 text-sm">No communities found.</p>
+          )
+        }
       </div>
+
 
       {/* Community Modal */}
       {showModal && (
