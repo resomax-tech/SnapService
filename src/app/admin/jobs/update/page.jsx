@@ -7,7 +7,7 @@ import { toDateKey } from "@/lib/normalizeDate";
 import { Search } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 
 export default function CommunitiesPage() {
@@ -85,7 +85,7 @@ export default function CommunitiesPage() {
         });
 
         doc.setFontSize(16);
-        doc.text("Workers Job Sheet", 14, 15);
+        doc.text("Community Job Sheet", 14, 15);
 
         const generatedText = `Generated on: ${new Date().toLocaleDateString()}`;
         const pageWidth = doc.internal.pageSize.getWidth();
@@ -94,84 +94,135 @@ export default function CommunitiesPage() {
         doc.text(generatedText, pageWidth - textWidth - 14, 15);
 
         const headers = [
-            ["S.No", "Customer", "Mobile", "Community", "Flat", "Bathrooms", "Plan", "Status", "Done", "Pending"],
+            [
+                "S.No",
+                "Customer",
+                "Mobile",
+                "Community",
+                "Flat",
+                "Bathrooms",
+                "Plan",
+                "Status",
+            ],
         ];
 
-        const rows = sheetData.map((j, i) => [
+        const rows = jobs.map((j, i) => [
             i + 1,
             j.customer,
             j.mobile,
-            j.community,
+            j.community || "-",
             j.flat,
             j.bathrooms,
             j.workType,
             j.status,
-            "", // checkbox
-            "", // checkbox
         ]);
 
         autoTable(doc, {
             startY: 25,
             head: headers,
             body: rows,
-            theme: "grid",
+            theme: "striped",
             styles: { fontSize: 10, cellPadding: 3, halign: "center" },
-            didDrawCell: function (data) {
-                if (data.section === "body" && (data.column.index === 8 || data.column.index === 9)) {
-                    const { x, y, width, height } = data.cell;
-                    const boxSize = 4; // checkbox size
-
-                    // Center horizontally and vertically inside cell
-                    const offsetX = x + (width - boxSize) / 2;
-                    const offsetY = y + (height - boxSize) / 2;
-
-                    doc.rect(offsetX, offsetY, boxSize, boxSize);
-                }
-            },
+            headStyles: { fillColor: [45, 62, 80] },
         });
 
-        doc.save(`${findWorkerName(selectedWorker)}_Worker_Jobsheet_${new Date().toLocaleDateString()}.pdf`);
+        const filename = `${selectedCommunity || "Community"}_Jobsheet_${new Date()
+            .toLocaleDateString()
+            .replace(/\//g, "-")}.pdf`;
+        doc.save(filename);
     };
 
+    const exportToExcel = async () => {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Community Job Sheet");
 
-    const exportToExcel = () => {
+        // Header row
         const headers = [
-            ["S.No", "Customer", "Mobile", "Community", "Flat", "Bathrooms", "Plan", "Status", "Done", "Pending"],
+            "S.No",
+            "Customer",
+            "Mobile",
+            "Community",
+            "Flat",
+            "Bathrooms",
+            "Plan",
+            "Status",
         ];
+        worksheet.addRow(headers);
 
-        const rows = sheetData.map((j, i) => [
-            i + 1,
-            j.customer,
-            j.mobile,
-            j.community,
-            j.flat,
-            j.bathrooms,
-            j.workType,
-            j.status,
-            j.done,      // visually represent checkboxes
-            j.pending
-        ]);
+        // Data rows
+        jobs.forEach((j, i) => {
+            worksheet.addRow([
+                i + 1,
+                j.customer,
+                j.mobile,
+                j.community || "-",
+                j.flat,
+                j.bathrooms,
+                j.workType,
+                j.status,
+            ]);
+        });
 
-        const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Worker Job Sheet");
+        // Style header
+        const headerRow = worksheet.getRow(1);
+        headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+        headerRow.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FF2F5597" },
+        };
+        headerRow.alignment = { horizontal: "center", vertical: "middle" };
+        headerRow.height = 20;
 
-        // Optional: column widths
-        ws['!cols'] = [
-            { wch: 5 },  // S.No
-            { wch: 20 }, // Customer
-            { wch: 15 }, // Mobile
-            { wch: 20 }, // Community
-            { wch: 15 }, // Flat
-            { wch: 10 }, // Bathrooms
-            { wch: 12 }, // Plan
-            { wch: 12 }, // Status
-            { wch: 10 }, // Done
-            { wch: 10 }, // Pending
-        ];
+        // Borders & alternating row colors
+        worksheet.eachRow((row, rowNumber) => {
+            row.eachCell((cell) => {
+                cell.border = {
+                    top: { style: "thin" },
+                    left: { style: "thin" },
+                    bottom: { style: "thin" },
+                    right: { style: "thin" },
+                };
+                cell.alignment = { horizontal: "center", vertical: "middle" };
+            });
+            if (rowNumber > 1 && rowNumber % 2 === 0) {
+                row.eachCell(
+                    (cell) =>
+                    (cell.fill = {
+                        type: "pattern",
+                        pattern: "solid",
+                        fgColor: { argb: "FFF2F2F2" },
+                    })
+                );
+            }
+        });
 
-        XLSX.writeFile(wb, `${findWorkerName(selectedWorker)}_Worker_Jobsheet.xlsx`);
+        // Auto-fit column widths
+        worksheet.columns.forEach((column) => {
+            let maxLength = 0;
+            column.eachCell({ includeEmpty: true }, (cell) => {
+                const val = cell.value ? cell.value.toString().length : 10;
+                if (val > maxLength) maxLength = val;
+            });
+            column.width = maxLength < 15 ? 15 : maxLength + 3;
+        });
+
+        // Download Excel file
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], {
+            type:
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${selectedCommunity || "Community"}_Jobsheet_${new Date()
+            .toLocaleDateString()
+            .replace(/\//g, "-")}.xlsx`;
+        a.click();
+        window.URL.revokeObjectURL(url);
     };
+
 
     useEffect(() => {
         fetchCommunities()

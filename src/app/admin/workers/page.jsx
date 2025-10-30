@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Edit, Trash2, Plus } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 export default function WorkersPage() {
   const [workers, setWorkers] = useState([]);
@@ -161,38 +161,82 @@ export default function WorkersPage() {
   };
 
 
-  const exportToExcel = () => {
-    const headers = [
-      ["S.No", "Name", "Mobile", "Community A", "Community B", "Work Type", "Active", "Max Bathrooms"],
-    ];
+ const exportToExcel = async () => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Workers Sheet");
 
-    const rows = filteredWorkers.map((w, i) => [
+  // Add header row
+  worksheet.addRow([
+    "S.No",
+    "Name",
+    "Mobile",
+    "Community A",
+    "Community B",
+    "Work Type",
+    "Active",
+    "Max Bathrooms",
+  ]);
+
+  // Add data rows
+  filteredWorkers.forEach((w, i) => {
+    worksheet.addRow([
       i + 1,
       w.name,
       w.mobile,
       getCommunityName(w.communities[0]),
       getCommunityName(w.communities[1]),
       w.workType,
-      w.active,
+      w.active ? "Yes" : "No",
       w.maxBathrooms,
     ]);
+  });
 
-    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Workers Sheet");
+  // Style header row
+  const headerRow = worksheet.getRow(1);
+  headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+  headerRow.alignment = { horizontal: "center", vertical: "middle" };
+  headerRow.eachCell((cell) => {
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF4F81BD" }, // blue header background
+    };
+    cell.border = {
+      top: { style: "thin" },
+      left: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" },
+    };
+  });
 
-    // Optional: column widths
-    ws['!cols'] = [
-      { wch: 5 },
-      { wch: 20 },
-      { wch: 15 },
-      { wch: 20 },
-      { wch: 15 },
-      { wch: 10 },
-    ];
+  // Optional: set column widths
+  worksheet.columns = [
+    { width: 5 },   // S.No
+    { width: 20 },  // Name
+    { width: 15 },  // Mobile
+    { width: 20 },  // Community A
+    { width: 20 },  // Community B
+    { width: 15 },  // Work Type
+    { width: 10 },  // Active
+    { width: 15 },  // Max Bathrooms
+  ];
 
-    XLSX.writeFile(wb, `Workers_sheet.xlsx`);
-  };
+  // Create file buffer
+  const buffer = await workbook.xlsx.writeBuffer();
+
+  // Trigger download in browser
+  const blob = new Blob([buffer], {
+    type:
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "Workers_sheet.xlsx";
+  a.click();
+  window.URL.revokeObjectURL(url);
+};
 
   const filteredWorkers = workers.filter(
     (w) =>

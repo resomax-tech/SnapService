@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutDashboard, FileSpreadsheet, FileBox,Building2, UserCog, Users, LogOut, CreditCard } from "lucide-react";
+import { LayoutDashboard, FileSpreadsheet, FileBox, Building2, UserCog, Users, LogOut, CreditCard, ArrowLeftRight } from "lucide-react";
 import { usePathname } from "next/navigation";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -14,14 +14,12 @@ const sidebarItems = [
   { name: "Workers", path: "/admin/workers", icon: <UserCog size={18} /> },
   { name: "Transactions", path: "/admin/transactions", icon: <CreditCard size={18} /> },
   { name: "Customers", path: "/admin/customers", icon: <Users size={18} /> },
-  { name: "Transactions", path: "/admin/transactions", icon: <ArrowLeftRight size={18} /> },
-  {name:"Generate Sheets",path:"/admin/generatesheets",icon:<FileSpreadsheet size={18}/>}
 ];
 
 export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const handleLogout = async ()=>{
+  const handleLogout = async () => {
     const response = await axios.post('/api/auth/logout')
     alert(response.data.msg)
     router.push("/admin/login")

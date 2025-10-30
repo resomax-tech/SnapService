@@ -5,7 +5,7 @@ import { Edit, Trash2, Plus, Users } from "lucide-react";
 import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
@@ -118,30 +118,60 @@ export default function CustomersPage() {
   };
 
 
-  const exportToExcel = () => {
-    const headers = [
-      ["S.No", "Name", "Email", "Mobile"],
+
+  const exportToExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Customers Sheet");
+
+    // Add header row
+    worksheet.addRow(["S.No", "Name", "Email", "Mobile"]);
+
+    // Add data rows
+    filteredCustomers.forEach((c, i) => {
+      worksheet.addRow([i + 1, c.name, c.email, c.mobile]);
+    });
+
+    // Style header row
+    const headerRow = worksheet.getRow(1);
+    headerRow.font = { bold: true };
+    headerRow.alignment = { horizontal: "center" };
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFD9EAD3" }, // light green background
+      };
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+    });
+
+    // Optional: Set column widths
+    worksheet.columns = [
+      { width: 5 },   // S.No
+      { width: 20 },  // Name
+      { width: 25 },  // Email
+      { width: 15 },  // Mobile
     ];
 
-    const rows = filteredCustomers.map((c, i) => [
-      i + 1,
-      c.name,
-      c.email,
-      c.mobile,
-    ]);
+    // Create Excel file as buffer
+    const buffer = await workbook.xlsx.writeBuffer();
 
-    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Customers Sheet");
+    // Download in browser
+    const blob = new Blob([buffer], {
+      type:
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
 
-    // Optional: column widths
-    ws['!cols'] = [
-      { wch: 5 },
-      { wch: 20 },
-      { wch: 15 },
-    ];
-
-    XLSX.writeFile(wb, `Customers_sheet.xlsx`);
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Customers_sheet.xlsx`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   // const getCommunityName = (id) => communities.find((c) => c.id === Number(id))?.name || "";

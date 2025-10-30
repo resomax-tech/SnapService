@@ -7,7 +7,7 @@ import { toDateKey } from "@/lib/normalizeDate";
 import { UserRoundCog } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 
 export default function CommunitiesPage() {
@@ -105,44 +105,108 @@ export default function CommunitiesPage() {
     };
 
 
-    const exportToExcel = () => {
-        const headers = [
-            ["S.No", "Customer", "Mobile", "Community", "Flat", "Bathrooms", "Plan", "Status", "Done", "Pending"],
-        ];
 
-        const rows = sheetData.map((j, i) => [
-            i + 1,
-            j.customer,
-            j.mobile,
-            j.community,
-            j.flat,
-            j.bathrooms,
-            j.workType,
-            j.status,
-            j.done,      // visually represent checkboxes
-            j.pending
+    const exportToExcel = async () => {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Worker Job Sheet");
+
+        // Header row
+        worksheet.addRow([
+            "S.No",
+            "Customer",
+            "Mobile",
+            "Community",
+            "Flat",
+            "Bathrooms",
+            "Plan",
+            "Status",
+            "Done",
+            "Pending",
         ]);
 
-        const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Worker Job Sheet");
+        // Data rows
+        sheetData.forEach((j, i) => {
+            worksheet.addRow([
+                i + 1,
+                j.customer,
+                j.mobile,
+                j.community,
+                j.flat,
+                j.bathrooms,
+                j.workType,
+                j.status,
+                j.done ? "✔️" : "",     // show checkmark if done
+                j.pending ? "✔️" : "",  // same for pending
+            ]);
+        });
 
-        // Optional: column widths
-        ws['!cols'] = [
-            { wch: 5 },  // S.No
-            { wch: 20 }, // Customer
-            { wch: 15 }, // Mobile
-            { wch: 20 }, // Community
-            { wch: 15 }, // Flat
-            { wch: 10 }, // Bathrooms
-            { wch: 12 }, // Plan
-            { wch: 12 }, // Status
-            { wch: 10 }, // Done
-            { wch: 10 }, // Pending
+        // Style header row
+        const headerRow = worksheet.getRow(1);
+        headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+        headerRow.alignment = { horizontal: "center", vertical: "middle" };
+        headerRow.eachCell((cell) => {
+            cell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FF2F5597" }, // dark blue header
+            };
+            cell.border = {
+                top: { style: "thin" },
+                left: { style: "thin" },
+                bottom: { style: "thin" },
+                right: { style: "thin" },
+            };
+        });
+
+        // Column widths
+        worksheet.columns = [
+            { width: 5 },  // S.No
+            { width: 20 }, // Customer
+            { width: 15 }, // Mobile
+            { width: 20 }, // Community
+            { width: 15 }, // Flat
+            { width: 10 }, // Bathrooms
+            { width: 12 }, // Plan
+            { width: 12 }, // Status
+            { width: 10 }, // Done
+            { width: 10 }, // Pending
         ];
 
-        XLSX.writeFile(wb, `${findWorkerName(selectedWorker)}_Worker_Jobsheet.xlsx`);
+        // Center-align all rows
+        worksheet.eachRow((row, rowNumber) => {
+            row.eachCell((cell) => {
+                cell.alignment = { horizontal: "center", vertical: "middle" };
+            });
+        });
+
+        // Optional: alternating row background colors for readability
+        worksheet.eachRow((row, rowNumber) => {
+            if (rowNumber > 1 && rowNumber % 2 === 0) {
+                row.eachCell((cell) => {
+                    cell.fill = {
+                        type: "pattern",
+                        pattern: "solid",
+                        fgColor: { argb: "FFF2F2F2" }, // light gray for alternate rows
+                    };
+                });
+            }
+        });
+
+        // Generate Excel file and download
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], {
+            type:
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${findWorkerName(selectedWorker)}_Worker_Jobsheet.xlsx`;
+        a.click();
+        window.URL.revokeObjectURL(url);
     };
+
 
 
     const findWorkerName = (id) => {

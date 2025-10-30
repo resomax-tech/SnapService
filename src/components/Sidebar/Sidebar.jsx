@@ -1,9 +1,12 @@
+// components/Sidebar/Sidebar.jsx
 "use client";
 
 import SidebarLink from "./SidebarLink";
 import { CgCloseR } from "react-icons/cg";
 
 export default function Sidebar({ menuOpen, setMenuOpen }) {
+  if (!menuOpen) return null;
+
   const links = [
     { href: "/customer/about", label: "About Us" },
     { href: "/customer/contact", label: "Contact Us" },
@@ -24,15 +27,9 @@ export default function Sidebar({ menuOpen, setMenuOpen }) {
             <CgCloseR className="w-6 h-6" />
           </button>
         </div>
-
         <nav className="flex flex-col p-4 gap-4 text-lg">
-          {links.map((link) => (
-            <SidebarLink
-              key={link.href}
-              href={link.href}
-              label={link.label}
-              onClick={() => setMenuOpen(false)}
-            />
+          {links.map(link => (
+            <SidebarLink key={link.href} href={link.href} label={link.label} onClick={() => setMenuOpen(false)} />
           ))}
         </nav>
       </aside>
