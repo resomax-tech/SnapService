@@ -44,14 +44,13 @@ export function BookingProvider({ children }) {
     }
 
     const resetBooking = () => {
-    setBookingData({
+        setBookingData({
             community: null,
             message: null,
             plan: null,
             dates: [],
             bathrooms: null,
             flat: null,
-            user: null
         });
         localStorage.removeItem("bookingData");
     };

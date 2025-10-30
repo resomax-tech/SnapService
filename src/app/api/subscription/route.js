@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Subscription from "@/models/subscriptionModel";
 import Job from "@/models/JobModel";
 import dbConnect from "@/lib/connectDB";
+import { getAvailableWorkers, assignJobsToWorkers } from "@/lib/handlers";
 import { normalizeLocalDate, toDateKey } from "@/lib/normalizeDate";
 import { decryptToken } from "@/lib/auth";
 
@@ -64,37 +65,74 @@ export async function POST(req) {
 const generateJobs = async (subscription) => {
     try {
         console.log("subscription: ", subscription);
-        
+
         const jobType = subscription.plan?.toLowerCase().includes("classic")
             ? "classic"
             : "deep";
 
-        // console.log("subscription: ", subscription);
-        // console.log(jobType);
-        
+        const jobs = [];
 
+        // ✅ Step 1: Create Jobs (wait for each properly)
+        for (const d of subscription.bookedDates) {
+            const normalized = normalizeLocalDate(d);
+            const dateKey = toDateKey(d);
 
-        await Promise.all(
-            subscription.bookedDates.map((d) => {
+            const job = await Job.create({
+                subscription: subscription._id,
+                community: subscription.community,
+                date: normalized,
+                dateKey,
+                workType: jobType,
+                bathrooms: subscription.bathrooms,
+                status: "pending",
+            });
 
-                const normalized = normalizeLocalDate(d)
-                const dateKey = toDateKey(d)
+            jobs.push(job);
+        }
 
-                Job.create({
-                    subscription: subscription._id,
-                    community: subscription.community,
-                    date: normalized,
-                    dateKey,
-                    workType: jobType,
-                    bathrooms: subscription.bathrooms,
-                })
+        console.log(`🧾 Created ${jobs.length} jobs for subscription ${subscription._id}`);
+
+        // ✅ Step 2: Group Jobs by Date
+        const groupedByDate = jobs.reduce((acc, job) => {
+            if (!acc[job.dateKey]) acc[job.dateKey] = [];
+            acc[job.dateKey].push(job);
+            return acc;
+        }, {});
+
+        // ✅ Step 3: Auto-Assign Workers
+        const summary = [];
+
+        for (const dateKey of Object.keys(groupedByDate)) {
+            const jobsForDate = groupedByDate[dateKey];
+            const communityId = jobsForDate[0].community;
+            const workType = jobsForDate[0].workType;
+
+            // 1️⃣ Get available workers for that community/date
+            const workerCapacities = await getAvailableWorkers(communityId, workType, dateKey);
+
+            if (!workerCapacities || workerCapacities.length === 0) {
+                summary.push({ community: communityId, workType, assigned: 0, msg: "No available workers" });
+                continue;
             }
-            )
-        );
 
-        console.log(`Created ${subscription.bookedDates.length} jobs for subscription ${subscription._id}`);
+            // 2️⃣ Assign jobs to workers
+            const updates = await assignJobsToWorkers(jobsForDate, workerCapacities);
+
+            summary.push({
+                community: communityId,
+                workType,
+                assigned: updates.length,
+                workersUsed: workerCapacities.length,
+            });
+
+            console.log(`✅ Assigned ${updates.length} jobs for ${communityId} on ${dateKey}`);
+        }
+
+        console.log("🎉 Auto-assignment complete for subscription:", subscription._id);
+        console.log("Summary:", summary);
     } catch (error) {
-        console.error("❌ Error creating jobs:", error.message);
+        console.error("❌ Error creating or assigning jobs:", error.message);
         throw new Error("Job generation failed");
     }
 };
+

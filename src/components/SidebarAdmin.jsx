@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutDashboard, FileSpreadsheet, Building2, UserCog, Users, LogOut, CreditCard } from "lucide-react";
+import { LayoutDashboard, FileSpreadsheet, FileBox,Building2, UserCog, Users, LogOut, CreditCard } from "lucide-react";
 import { usePathname } from "next/navigation";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
 const sidebarItems = [
   { name: "Dashboard", path: "/admin", icon: <LayoutDashboard size={18} /> },
-  { name: "Generate Jobsheet", path: "/admin/jobs", icon: <FileSpreadsheet size={18} /> },
+  { name: "Generate Jobsheet", path: "/admin/jobs/generate", icon: <FileSpreadsheet size={18} /> },
+  { name: "Update Jobsheet", path: "/admin/jobs/update", icon: <FileBox size={18} /> },
   { name: "Communities", path: "/admin/communities", icon: <Building2 size={18} /> },
   { name: "Workers", path: "/admin/workers", icon: <UserCog size={18} /> },
   { name: "Transactions", path: "/admin/transactions", icon: <CreditCard size={18} /> },

@@ -7,9 +7,6 @@ import subscriptionModel from "@/models/subscriptionModel";
 import WorkerModel from "@/models/WorkerModel";
 
 
-
-
-
 export async function GET(req) {
     try {
         await db_connect()

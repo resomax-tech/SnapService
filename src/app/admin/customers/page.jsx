@@ -24,7 +24,7 @@ export default function CustomersPage() {
   const fetchCustomers = async () => {
     try {
       setLoading(true)
-      const response = await axios.get('/api/customer', { withCredentials: true })
+      const response = await axios.get('/api/auth/admin/customer', { withCredentials: true })
       setCustomers(response.data.users)
       setLoading(false)
     } catch (error) {

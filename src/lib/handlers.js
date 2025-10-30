@@ -2,12 +2,12 @@ import db_connect from "./connectDB";
 import JobModel from "@/models/JobModel";
 import WorkerModel from "@/models/WorkerModel";
 
-export const getUnassignedJobs = async (date) => {
+export const getUnassignedJobs = async (dateKey) => {
     await db_connect()
 
     const jobs = await JobModel.find({
-        dateKey: date,
-        worker: null
+        worker: null,
+        dateKey
     });
 
     const grouped = jobs.reduce((acc, job) => {
@@ -37,6 +37,10 @@ export const getAvailableWorkers = async (communityId, workType, dateKey) => {
             dateKey
         })
 
+        // console.log("alreadyAssigned", alreadyAssigned);
+        // console.log("worker", worker);
+        // console.log("maxBathrooms", worker.maxBathrooms);
+
         const remaining = worker.maxBathrooms - alreadyAssigned;
 
         if (remaining > 0) {
@@ -57,16 +61,20 @@ export const assignJobsToWorkers = async (jobs, workers) => {
     if (workers.length === 0) return []
 
     let i = 0
-    let updates = []
-
+    let updates = []   
 
     for (const job of jobs) {
         if (workers.length === 0) break;
 
-        const worker = workers[i]
+        let worker = workers[i]
 
+        if (job.bathrooms > worker.remaining) {
+            const next = workers.find(w => w.remaining >= job.bathrooms);
+            if (!next) break; // no one can take this job
+            worker = next;
+            i = workers.indexOf(next);
+        }
 
-        console.log("worker: ", worker.id);
 
         updates.push({
             updateOne: {
@@ -77,8 +85,10 @@ export const assignJobsToWorkers = async (jobs, workers) => {
 
         worker.remaining -= job.bathrooms
 
-        if (worker.remaining === 0) {
+        if (worker.remaining <= 0) {
             workers.splice(i, 1)
+            if (workers.length === 0) break;
+            if (i >= workers.length) i = 0;
         }
         else {
             i = (i + 1) % workers.length;

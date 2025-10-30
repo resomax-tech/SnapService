@@ -5,8 +5,10 @@ import { normalizeLocalDate, toDateKey } from "@/lib/normalizeDate";
 
 export const BookingCalendar = ({
     planType = "",
+    bathrooms = 1,
     onDatesSelected = () => { },
     availableDates = [],
+    onInvalidSelection = () => { },
     fetchDates
 }) => {
     const [selected, setSelected] = useState([]);
@@ -33,14 +35,30 @@ export const BookingCalendar = ({
         const gap = plan.includes("4W") ? 7 : 14
         const occurrences = plan.includes("4W") ? 4 : 2
 
-        const recurringDates = [];
+        const proposed = [];
+
         for (let i = 0; i < occurrences; i++) {
             const d = normalizeLocalDate(date)
             d.setDate(d.getDate() + i * gap);
-            recurringDates.push(d);
+            proposed.push(d);
         }
-        setSelected(recurringDates);
-        onDatesSelected(recurringDates);
+
+        for (const d of proposed) {
+            const dk = toDateKey(d)
+            const getDateInfo = availableDates.find((x) => x.date === dk)
+
+            if (!getDateInfo || getDateInfo.available < bathrooms) {
+                onInvalidSelection(true)
+                setSelected([]);
+                onDatesSelected([]);
+                return;
+            }
+        }
+
+        onInvalidSelection(false)
+        setSelected(proposed)
+        onDatesSelected(proposed)
+
 
         if (selectedDate > latestAvailable) {
             fetchDates(selectedDate)

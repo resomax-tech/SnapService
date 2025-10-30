@@ -6,7 +6,7 @@ import { DayPicker } from "react-day-picker";
 import { toDateKey } from "@/lib/normalizeDate";
 import { UserRoundCog } from "lucide-react";
 import jsPDF from "jspdf";
-import 'jspdf-autotable';
+import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 
 
@@ -37,7 +37,7 @@ export default function CommunitiesPage() {
                 date: toDateKey(selected)
             }
 
-            const response = await axios.get(`/api/generate`, { params, withCredentials: true })
+            const response = await axios.get(`/api/auth/admin/generate`, { params, withCredentials: true })
             setSheetData(response.data.formatted)
 
         } catch (error) {

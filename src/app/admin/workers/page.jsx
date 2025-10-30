@@ -7,48 +7,47 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 
-
 export default function WorkersPage() {
   const [workers, setWorkers] = useState([]);
-  const [communities, setCommunities] = useState([]); // Needed to map communities names
+  const [communities, setCommunities] = useState([]);
   const [showWorkerModal, setShowWorkerModal] = useState(false);
   const [editingWorker, setEditingWorker] = useState(null);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const [worker, setWorker] = useState({
     name: "",
     mobile: "",
     communities: [],
     workType: "classic",
     maxBathrooms: 7,
+    active: true, // ✅ Default to active
   });
   const [searchWorker, setSearchWorker] = useState("");
 
   const fetchCommunities = async () => {
     try {
-      const response = await axios.get('/api/community')
-      setCommunities(response.data.communities)
+      const response = await axios.get("/api/community");
+      setCommunities(response.data.communities);
     } catch (error) {
-      console.log("error while fetching communities");
-      console.log(error);
+      console.log("error while fetching communities", error);
     }
-  }
+  };
 
   const fetchWorkers = async () => {
     try {
-      setLoading(true)
-      const response = await axios.get('/api/worker')
+      setLoading(true);
+      const response = await axios.get("/api/worker");
       setWorkers(response.data.workers || []);
     } catch (error) {
-      console.log("error while fetching communities");
+      console.log("error while fetching workers", error);
       setWorkers([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchCommunities()
-    fetchWorkers()
+    fetchCommunities();
+    fetchWorkers();
   }, []);
 
   /** Worker Handlers */
@@ -56,7 +55,10 @@ export default function WorkersPage() {
     const { name, value } = e.target;
     setWorker((prev) => ({
       ...prev,
-      [name]: value,
+      [name]:
+        name === "active"
+          ? value === "yes" // Convert to boolean
+          : value,
     }));
   };
 
@@ -70,7 +72,6 @@ export default function WorkersPage() {
 
   const handleWorkerSubmit = async (e) => {
     e.preventDefault();
-
     const payload = {
       ...worker,
       communities: (worker.communities || []).filter(
@@ -105,22 +106,17 @@ export default function WorkersPage() {
           : [],
       workType: w?.workType || "classic",
       maxBathrooms: w?.maxBathrooms || 5,
+      active: w?.active ?? true,
     });
     setShowWorkerModal(true);
   };
 
   const handleWorkerDelete = async (w) => {
     if (confirm("Are you sure you want to delete this worker?")) {
-      await axios.delete(`/api/worker/${w._id}`)
-      fetchWorkers()
+      await axios.delete(`/api/worker/${w._id}`);
+      fetchWorkers();
     }
   };
-
-  const filteredWorkers = workers.filter(
-    (w) =>
-      w.name.toLowerCase().includes(searchWorker.toLowerCase()) ||
-      w.mobile.includes(searchWorker)
-  );
 
   const handleDownloadPDF = () => {
     const doc = new jsPDF({
@@ -139,7 +135,7 @@ export default function WorkersPage() {
     doc.text(generatedText, pageWidth - textWidth - 14, 15);
 
     const headers = [
-      ["S.No", "Name", "Mobile", "Community A", "Community B", "Work Type", "Max Jobs"],
+      ["S.No", "Name", "Mobile", "Community A", "Community B", "Work Type", "Active", "Max Bathrooms"],
     ];
 
     const rows = filteredWorkers.map((w, i) => [
@@ -149,6 +145,7 @@ export default function WorkersPage() {
       getCommunityName(w.communities[0]),
       getCommunityName(w.communities[1]),
       w.workType,
+      w.active,
       w.maxBathrooms,
     ]);
 
@@ -166,7 +163,7 @@ export default function WorkersPage() {
 
   const exportToExcel = () => {
     const headers = [
-      ["S.No", "Name", "Mobile", "Community A", "Community B", "Work Type", "Max Jobs"],
+      ["S.No", "Name", "Mobile", "Community A", "Community B", "Work Type", "Active", "Max Bathrooms"],
     ];
 
     const rows = filteredWorkers.map((w, i) => [
@@ -176,6 +173,7 @@ export default function WorkersPage() {
       getCommunityName(w.communities[0]),
       getCommunityName(w.communities[1]),
       w.workType,
+      w.active,
       w.maxBathrooms,
     ]);
 
@@ -185,22 +183,30 @@ export default function WorkersPage() {
 
     // Optional: column widths
     ws['!cols'] = [
-      { wch: 5 },  
-      { wch: 20 },  
-      { wch: 15 },  
-      { wch: 20 },  
-      { wch: 15 },  
-      { wch: 10 },  
+      { wch: 5 },
+      { wch: 20 },
+      { wch: 15 },
+      { wch: 20 },
+      { wch: 15 },
+      { wch: 10 },
     ];
 
     XLSX.writeFile(wb, `Workers_sheet.xlsx`);
   };
 
-  const getCommunityName = (id) => communities.find((c) => c._id === id)?.name || "";
+  const filteredWorkers = workers.filter(
+    (w) =>
+      w.name.toLowerCase().includes(searchWorker.toLowerCase()) ||
+      w.mobile.includes(searchWorker)
+  );
+
+  const getCommunityName = (id) =>
+    communities.find((c) => c._id === id)?.name || "";
 
   return (
     <main className="flex-1 p-6 overflow-y-auto">
       <div className="bg-white p-6 rounded-xl shadow">
+        {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-3xl font-bold text-gray-700 flex items-center gap-2">
             Workers
@@ -208,7 +214,14 @@ export default function WorkersPage() {
           <button
             onClick={() => {
               setEditingWorker(null);
-              setWorker({ name: "", mobile: "", communities: [], workType: "classic", maxBathrooms: 5 });
+              setWorker({
+                name: "",
+                mobile: "",
+                communities: [],
+                workType: "classic",
+                maxBathrooms: 5,
+                active: true,
+              });
               setShowWorkerModal(true);
             }}
             className="bg-gray-700 text-white p-2 rounded-md hover:bg-gray-500 flex items-center gap-2"
@@ -237,18 +250,15 @@ export default function WorkersPage() {
             </div>
           </div>
         </div>
+
+        {/* Table */}
         {loading ? (
-          <div className="max-w-7xl flex items-start justify-center min-h-[200px]">
-            <div className="flex flex-row gap-2 mt-10">
-              <div className="w-4 h-4 rounded-full bg-[#3D8D7A] animate-bounce"></div>
-              <div className="w-4 h-4 rounded-full bg-[#3D8D7A] animate-bounce [animation-delay:-.3s]"></div>
-              <div className="w-4 h-4 rounded-full bg-[#3D8D7A] animate-bounce [animation-delay:-.5s]"></div>
-            </div>
-          </div>
+          <div className="flex justify-center mt-10">Loading...</div>
         ) : workers.length === 0 ? (
-          <p className="text-gray-500 text-sm text-center mt-10">No workers found.</p>
+          <p className="text-gray-500 text-sm text-center mt-10">
+            No workers found.
+          </p>
         ) : (
-          // ✅ Show data table
           <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
             <thead className="bg-gray-100 text-gray-700">
               <tr>
@@ -258,7 +268,8 @@ export default function WorkersPage() {
                 <th className="p-2 text-left">Community A</th>
                 <th className="p-2 text-left">Community B</th>
                 <th className="p-2 text-left">Work Type</th>
-                <th className="p-2 text-left">Max Jobs</th>
+                <th className="p-2 text-left">Max Bathrooms</th>
+                <th className="p-2 text-left">Active</th>
                 <th className="p-2 text-left">Actions</th>
               </tr>
             </thead>
@@ -268,10 +279,20 @@ export default function WorkersPage() {
                   <td className="p-2">{idx + 1}</td>
                   <td className="p-2">{w.name}</td>
                   <td className="p-2">{w.mobile}</td>
-                  <td className="p-2">{getCommunityName(w.communities[0]) || "-"}</td>
-                  <td className="p-2">{getCommunityName(w.communities[1]) || "-"}</td>
+                  <td className="p-2">
+                    {getCommunityName(w.communities[0]) || "-"}
+                  </td>
+                  <td className="p-2">
+                    {getCommunityName(w.communities[1]) || "-"}
+                  </td>
                   <td className="p-2 capitalize">{w.workType}</td>
-                  <td className="p-2">{w.maxBathrooms}</td>
+                  <td className="p-2 ps-10">{w.maxBathrooms}</td>
+                  <td
+                    className={`p-2 font-semibold ${w.active ? "text-green-600" : "text-red-600"
+                      }`}
+                  >
+                    {w.active ? "Yes" : "No"}
+                  </td>
                   <td className="p-2 flex gap-2">
                     <button
                       onClick={() => handleWorkerEdit(w)}
@@ -291,26 +312,29 @@ export default function WorkersPage() {
             </tbody>
           </table>
         )}
-
       </div>
 
       {/* Worker Modal */}
       {showWorkerModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
           <div className="bg-white rounded-xl p-6 w-11/12 max-w-4xl shadow-lg">
-            {/* Header */}
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">
                 {editingWorker ? "Edit Worker" : "Add Worker"}
               </h2>
-              <button onClick={() => setShowWorkerModal(false)} className="text-gray-500">
+              <button
+                onClick={() => setShowWorkerModal(false)}
+                className="text-gray-500"
+              >
                 ✖
               </button>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleWorkerSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Name (full width) */}
+            <form
+              onSubmit={handleWorkerSubmit}
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            >
+              {/* Name */}
               <div>
                 <label className="block text-sm font-medium">Name</label>
                 <input
@@ -332,22 +356,20 @@ export default function WorkersPage() {
                   name="mobile"
                   value={worker.mobile}
                   onChange={handleWorkerChange}
-                  className="w-full  rounded-md p-2"
+                  className="w-full border rounded-md p-2"
                   placeholder="Enter 10-digit mobile"
                   required
                   pattern="\d{10}"
                 />
               </div>
 
-              {/* communities */}
-              {/* Communities A & B side by side */}
+              {/* Community A */}
               <div>
-
-                <label className="block text-sm font-medium">community A</label>
+                <label className="block text-sm font-medium">Community A</label>
                 <select
                   value={worker.communities[0] || ""}
                   onChange={(e) => handleCommunityChange(0, e.target.value)}
-                  className="w-full rounded-md p-2"
+                  className="w-full border rounded-md p-2"
                   required
                 >
                   <option value="">Select community</option>
@@ -359,9 +381,9 @@ export default function WorkersPage() {
                 </select>
               </div>
 
-              {/* communities B */}
+              {/* Community B */}
               <div>
-                <label className="block text-sm font-medium">community B</label>
+                <label className="block text-sm font-medium">Community B</label>
                 <select
                   value={worker.communities[1] || ""}
                   onChange={(e) => handleCommunityChange(1, e.target.value)}
@@ -375,7 +397,6 @@ export default function WorkersPage() {
                   ))}
                 </select>
               </div>
-
 
               {/* Work Type */}
               <div>
@@ -392,9 +413,11 @@ export default function WorkersPage() {
                 </select>
               </div>
 
-              {/* Max Jobs */}
+              {/* Max Bathrooms */}
               <div>
-                <label className="block text-sm font-medium">Max Jobs</label>
+                <label className="block text-sm font-medium">
+                  Max Bathrooms
+                </label>
                 <input
                   type="number"
                   name="maxBathrooms"
@@ -407,10 +430,21 @@ export default function WorkersPage() {
                 />
               </div>
 
-              {/* Empty placeholder to balance grid if needed */}
-              <div></div>
+              {/* ✅ Active Field */}
+              <div>
+                <label className="block text-sm font-medium">Active</label>
+                <select
+                  name="active"
+                  value={worker.active ? "yes" : "no"}
+                  onChange={handleWorkerChange}
+                  className="w-full border rounded-md p-2"
+                >
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
 
-              {/* Submit Button spans full width */}
+              {/* Submit */}
               <div className="md:col-span-2">
                 <button
                   type="submit"
@@ -421,11 +455,8 @@ export default function WorkersPage() {
               </div>
             </form>
           </div>
-        </div >
-
-      )
-      }
-    </main >
+        </div>
+      )}
+    </main>
   );
 }
-

@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import Job from "@/models/JobModel";
 import dbConnect from "@/lib/connectDB";
 import { normalizeLocalDate, toDateKey } from "@/lib/normalizeDate";
+import JobModel from "@/models/JobModel";
 
 const getDaysWindow = (weeks) => {
   if (weeks?.includes("4W")) return 45;
@@ -16,35 +17,36 @@ export async function GET(req) {
     await dbConnect();
     const { searchParams } = new URL(req.url);
 
-    const community = searchParams.get("community");
+    const communityId = searchParams.get("community");
     const workType = searchParams.get("plan");
     const weeks = searchParams.get("weeks");
     const startDate = searchParams.get("startDate");
 
     // console.log(community, workType, weeks, startDate);
 
-    if (!community || !mongoose.Types.ObjectId.isValid(community)) {
+    if (!communityId || !mongoose.Types.ObjectId.isValid(communityId)) {
       return NextResponse.json({ msg: "Invalid or missing community ID" }, { status: 400 });
     }
 
-    // ✅ Correct plural and spelling
     const workers = await Worker.find({
-      communities: { $in: [new mongoose.Types.ObjectId(community)] },
+      communities: { $in: [communityId] },
       workType,
     });
 
-    console.log("Found workers:", workers.length);
-
-    const totalSlots = workers.reduce((sum, w) => sum + w.maxBathrooms, 0);
-
     if (workers.length === 0) {
       return NextResponse.json({
-        availableDates: {},
+        formatted: [],
         msg: "No workers found for this community and plan",
       });
     }
 
-    const availableDates = await checkAvailability(startDate, totalSlots, community, workType, weeks);
+    // console.log("Found workers:", workers.length);
+
+    const totalSlots = workers.reduce((sum, w) => sum + w.maxBathrooms, 0);
+
+
+
+    const availableDates = await checkAvailability(startDate, totalSlots, workers, communityId, workType, weeks);
 
     const formatted = Object.entries(availableDates)
       .map(([date, info]) => ({
@@ -62,28 +64,48 @@ export async function GET(req) {
   }
 }
 
-const checkAvailability = async (startDate, totalSlots, communityId, workType, weeks) => {
+
+
+const checkAvailability = async (startDate, totalSlots, workers, communityId, workType, weeks) => {
   const availability = {};
 
   const today = startDate ? normalizeLocalDate(startDate) : normalizeLocalDate(new Date());
   const endDate = normalizeLocalDate(new Date(today));
   endDate.setDate(today.getDate() + getDaysWindow(weeks) + 1);
 
-  // console.log("StartDate", toDateKey(today));
-  // console.log("endDate", toDateKey(endDate));
+  const workerIds = workers.map((w) => w._id);
 
-  // console.log(today, endDate, workType, weeks);
-  console.log(toDateKey(today), toDateKey(endDate), workType, weeks, totalSlots);
-  
-  
-  
+  // 🧮 1️⃣ Aggregate all jobs (assigned) for these workers across ALL communities
+  const jobsAggregation = await JobModel.aggregate([
+    {
+      $match: {
+        worker: { $in: workerIds },
+        dateKey: { $gte: toDateKey(today), $lt: toDateKey(endDate) },
+      },
+    },
+    {
+      $group: {
+        _id: { worker: "$worker", dateKey: "$dateKey" },
+        totalBathrooms: { $sum: "$bathrooms" },
+      },
+    },
+  ]);
 
-  const booked = await Job.aggregate([
+  // 🗺️  Build global usage map per date & worker
+  const workerUsageMap = {};
+  for (const record of jobsAggregation) {
+    const { worker, dateKey } = record._id;
+    if (!workerUsageMap[dateKey]) workerUsageMap[dateKey] = {};
+    workerUsageMap[dateKey][worker.toString()] = record.totalBathrooms;
+  }
+
+  // 🧮 2️⃣ Aggregate local community bookings (unassigned jobs or community-only)
+  const communityBookings = await JobModel.aggregate([
     {
       $match: {
         community: new mongoose.Types.ObjectId(String(communityId)),
         workType: workType.toLowerCase(),
-        dateKey: { $gte: toDateKey(today) , $lt: toDateKey(endDate) },
+        dateKey: { $gte: toDateKey(today), $lt: toDateKey(endDate) },
       },
     },
     {
@@ -94,18 +116,15 @@ const checkAvailability = async (startDate, totalSlots, communityId, workType, w
     },
   ]);
 
-  console.log("Found bookings:", booked.length); 
-
-  const bookedMap = booked.reduce((acc, b) => {    
+  const communityBookedMap = communityBookings.reduce((acc, b) => {
     acc[b._id] = b.totalBathrooms;
     return acc;
   }, {});
- 
 
+  // 🗓️ 3️⃣ Calculate availability per day
   for (let i = 0; i < getDaysWindow(weeks); i++) {
     const date = new Date(today);
     date.setDate(today.getDate() + i);
-
     const dateKey = toDateKey(date);
     const isHoliday = date.getDay() === 0;
 
@@ -114,10 +133,19 @@ const checkAvailability = async (startDate, totalSlots, communityId, workType, w
       continue;
     }
 
-    const bookedBathrooms = bookedMap[dateKey] || 0;
+    // 🧠 Calculate remaining capacity per worker (across communities)
+    let remainingSlots = 0;
+    for (const w of workers) {
+      const used = workerUsageMap[dateKey]?.[w._id.toString()] || 0;
+      const remaining = Math.max(0, w.maxBathrooms - used);
+      remainingSlots += remaining;
+    }
+
+    // 🧮 Subtract current community’s booked bathrooms
+const available = Math.max(0, remainingSlots);
 
     availability[dateKey] = {
-      available: totalSlots - bookedBathrooms,
+      available,
       total: totalSlots,
       isHoliday,
     };
@@ -125,3 +153,4 @@ const checkAvailability = async (startDate, totalSlots, communityId, workType, w
 
   return availability;
 };
+

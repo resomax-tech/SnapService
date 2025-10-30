@@ -31,7 +31,6 @@ export async function POST(req) {
         await dbConnect()
         
         const body = await req.json()
-        console.log(body);
         const worker = await Worker.create(body)
         return NextResponse.json(worker, { status: 201 })
     } catch (err) {

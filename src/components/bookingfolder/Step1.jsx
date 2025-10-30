@@ -10,6 +10,8 @@ export default function Step1({ nextStep }) {
   const [msg, setMsg] = useState('')
   const [availableDates, setAvailableDates] = useState([])
   const { bookingData, updateBooking } = useBooking()
+  const [isInvalidSelection, setIsInvalidSelection] = useState(false);
+
 
   const fetchDates = async (date) => {
     const params = {
@@ -21,10 +23,12 @@ export default function Step1({ nextStep }) {
     try {
 
       const response = await axios.get('/api/availability', { params })
-      console.log(response.data);
+      const newData = response.data.formatted || []
+
+      console.log("available dates: ", newData);
       
-      const newData = response.data.formatted
-      console.log("recieved: ", newData);
+
+
       setAvailableDates((prev) => {
         const map = new Map();
         [...prev, ...newData].forEach((d) => map.set(d.date, d));
@@ -51,18 +55,19 @@ export default function Step1({ nextStep }) {
   };
 
 
-
   return (
     <div>
       <div className="bg-gray-50 p-4 rounded-lg shadow">
         <h3 className="font-semibold mb-2">Booking Date</h3>
         {
-          availableDates ? <BookingCalendar
+          availableDates.length > 0 ? <BookingCalendar
             fetchDates={fetchDates}
             planType={bookingData.plan?.key || "4W"}
+            bathrooms={bookingData.bathrooms}
             availableDates={availableDates}
             onDatesSelected={handleDates}
-          /> : <p className="font-medium text-2xl text-center">{msg}</p>
+            onInvalidSelection={setIsInvalidSelection}
+          /> : <p className="font-medium text-xl mt-10 text-center">{msg}</p>
         }
 
       </div>
@@ -76,13 +81,19 @@ export default function Step1({ nextStep }) {
         </button>
 
         <button
-          disabled={!bookingData.dates || bookingData.dates.length === 0}
+          disabled={!bookingData.dates || isInvalidSelection || availableDates.length === 0 || bookingData.dates.length === 0}
           onClick={nextStep}
           className="bg-yellow-500 text-white px-6 py-2 rounded font-medium disabled:opacity-50"
         >
           Next
         </button>
+
       </div>
+        {isInvalidSelection && (
+          <p className="text-red-500 text-sm mt-2">
+            ⚠️ Not enough worker capacity. Please choose another date.
+          </p>
+        )}
     </div>
   );
 }
