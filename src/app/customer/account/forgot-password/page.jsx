@@ -172,7 +172,7 @@ export default function ForgotPasswordPage() {
                                     setLoading(false);
                                 }
                             }}
-                            className="w-80 border bg-amber-400 rounded-md py-2 mt-2 text-center font-semibold hover:bg-amber-500 mx-auto block"
+                            className="w-80 border bg-[#dba144] rounded-md py-2 mt-4 text-center font-semibold hover:bg-amber-500 mx-auto block"
                             disabled={loading}
                         >
                             {loading ? "Resending..." : "Resend OTP"}
